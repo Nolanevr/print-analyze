@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "print-analyze"
+version = "0.1.0"
+description = "Find framing-standard callouts on powerline construction prints and build an interactive as-built PDF that links each callout to its standard."
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = ["pymupdf>=1.24"]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[project.scripts]
+print-analyze = "print_analyze.cli:main"
+
+[tool.setuptools]
+packages = ["print_analyze"]
