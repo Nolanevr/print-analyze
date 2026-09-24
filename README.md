@@ -1,31 +1,70 @@
 # print-analyze
 
-Turn a powerline construction print (staking sheet / plan & profile) into an
-**interactive as-built PDF**:
+Turn a powerline construction as-built into an **interactive PDF**. Tap a
+structure number on the print and it jumps to that structure's framing standard.
+Each standard has a link back to the sheet.
 
-1. Reads every sheet of the print and finds the framing-standard callouts
-   (`C1.11`, `VC1.21`, `E1.2`, `F1.6`, `H1.1`, …).
-2. Pulls exactly those standards (and nothing else) out of your standards
-   library and appends them to the print.
-3. Makes every callout on the print **clickable**. Click `C7.1` next to a pole
-   and the PDF jumps to the C7.1 framing standard.
-4. Stamps a small **"Back to: Sheet 1, Sheet 3 | Standards index"** bar on each
-   standard page so you can get back to the print.
-5. Adds a **Framing Standards Used** index page (standard, description, qty,
-   sheets used on) and PDF bookmarks.
-6. Reports anything that *looks* like a standard but isn't in your library
-   (e.g. a typo, or a standard you haven't added yet).
+## As-Built Linker (no install)
 
-The output is a normal PDF. The links work in Adobe Acrobat/Reader, Bluebeam,
-Chrome/Edge, iPad viewers, and so on, with no plug-ins.
+`dist/as-built-linker.html` is a single file that runs in Chrome or Edge. It
+needs no Python, no install and no internet connection. Your drawings are
+processed on your own computer and never uploaded.
 
-## Install
+1. Download `dist/as-built-linker.html` and double-click it.
+2. **Standards book:** choose the framing standards PDF, then click the structure
+   number in the title block of the page shown. Every other page is read from the
+   same spot. Fix anything wrong by typing in the table. Pages with no number are
+   added to the structure before them, for standards that run several pages.
+3. **Print:** choose the as-built PDF, then click one structure number on it.
+   Only numbers of the same size are linked, so span lengths (`285'`), pole
+   classes (`45-3`), wire sizes (`1/0`), pole IDs and notes are skipped.
+4. **Check:** linked numbers show in orange. Click any box to switch it on or off.
+5. **Build:** downloads `<print>_linked.pdf`, which contains:
+   - the print, with each structure number highlighted and linked
+   - a "Structures Used" index (structure, book page, quantity, sheets)
+   - only the standard pages that are used, each with a "Back to sheet" bar
+   - bookmarks
+
+The tool remembers where the number sits in the title block and your filter
+settings, so next time you only choose the two files, check, and build.
+
+To see how it works, open the tool and choose **Try it with sample drawings**.
+
+### Phones and tablets
+
+The finished PDF uses standard PDF links, which open in Adobe Acrobat Reader
+(iOS/Android), Bluebeam, the iPhone/iPad Files app and desktop browsers. Some
+email-attachment previews don't follow links, so open the file in a PDF app.
+Keep "Large tap areas for phones and tablets" on so numbers are easy to hit
+with a finger.
+
+### If nothing is found
+
+The tool reads the PDF's text. AutoCAD prints plotted with SHX fonts have no
+text (the letters are line work), and the tool says "No text found". Re-plot
+with TrueType fonts, or set `PDFSHX` to 1 in AutoCAD. A quick check: press
+Ctrl+F in the PDF and search for a structure number. If the search finds it,
+the tool can too.
+
+### Rebuilding the HTML file
+
+```bash
+cd web && npm install && node build.mjs   # writes dist/as-built-linker.html
+node test.mjs                              # headless-Chromium end-to-end test
+```
+
+## Python command-line version
+
+The original command-line tool, for letter/number codes such as `C1.11` or
+`VC1.21` and for batch runs.
+
+### Install
 
 ```bash
 pip install -e .          # needs Python 3.9+, installs PyMuPDF
 ```
 
-## Quick start
+### Quick start
 
 ```bash
 print-analyze PRINT.pdf --standards path/to/standards -o AS_BUILT.pdf --report callouts.csv
@@ -48,9 +87,9 @@ Looks like a standard but not in library (1): C9.99
 Wrote examples/output/as-built.pdf
 ```
 
-## Setting up the standards library
+### Setting up the standards library
 
-### Option A: one PDF per standard (simplest)
+#### Option A: one PDF per standard (simplest)
 
 ```
 standards/
@@ -64,7 +103,7 @@ The code is the file name, or the part before ` - ` when the name also has a
 description. Matching ignores upper/lower case and spaces, so `VC 1.21` on a
 print matches `VC1.21.pdf`.
 
-### Option B: one big standards book plus an index CSV
+#### Option B: one big standards book plus an index CSV
 
 ```csv
 code,file,pages,title,aliases
@@ -80,7 +119,7 @@ print-analyze PRINT.pdf --index standards/index.csv -o AS_BUILT.pdf
 other spellings a designer might use for the same unit. You can use `--standards`
 and `--index` together; index rows win.
 
-## How callouts are recognized
+### How callouts are recognized
 
 The text on each sheet is split at spaces and at `/ , ( ) + &`, and each piece is
 looked up in the library. The match has to be exact, so `C1.1` never matches
@@ -99,7 +138,7 @@ under "not in library". Change that pattern with `--candidate-pattern REGEX`
 
 Rotated sheets (11×17 exported sideways) are handled.
 
-## Prints without a text layer (important for CAD exports)
+### Prints without a text layer (important for CAD exports)
 
 The tool reads the PDF's text. If AutoCAD/MicroStation exported the print with
 **SHX fonts**, the letters become line work and there is no text to read. The
@@ -115,7 +154,7 @@ best to worst:
 A quick check: open the print and press Ctrl+F for a standard code. If the
 search finds it, this tool will too.
 
-## Options
+### Options
 
 | Option | Meaning |
 |---|---|
@@ -129,7 +168,7 @@ search finds it, this tool will too.
 | `--no-back-links` | don't stamp the "Back to" bar on standard pages |
 | `--no-index` | skip the "Framing Standards Used" page |
 
-## Using it from Python
+### Using it from Python
 
 ```python
 from print_analyze import StandardsLibrary, build_as_built, BuildOptions
@@ -139,7 +178,7 @@ report = build_as_built("print.pdf", lib, "as-built.pdf", BuildOptions(highlight
 report.write_csv("callouts.csv")
 ```
 
-## Development
+### Development
 
 ```bash
 pip install -e .[dev]

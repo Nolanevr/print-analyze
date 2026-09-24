@@ -1,0 +1,14 @@
+{
+  "name": "as-built-linker",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test.mjs"
+  },
+  "devDependencies": {
+    "pdf-lib": "1.17.1",
+    "pdfjs-dist": "3.11.174",
+    "playwright-core": "^1.50.0"
+  }
+}

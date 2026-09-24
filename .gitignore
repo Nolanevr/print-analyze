@@ -6,3 +6,4 @@ dist/
 .venv/
 examples/output/
 examples/sample/
+web/node_modules/

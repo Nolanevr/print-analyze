@@ -1,0 +1,1042 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>As-Built Linker</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #eceff0;
+  --panel: #ffffff;
+  --sunk: #f5f7f7;
+  --ink: #1b2629;
+  --muted: #5b686b;
+  --line: #d2d9d9;
+  --accent: #c5531c;
+  --accent-soft: #fbe6d9;
+  --link: #1d5ea8;
+  --ok: #2d7a4c;
+  --ok-soft: #dff0e5;
+  --warn: #9a6200;
+  --warn-soft: #f8ecd2;
+  --sheet: #fbfcfc;
+  --display: "Bahnschrift", "DIN Alternate", "Segoe UI", system-ui, sans-serif;
+  --body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+  --mono: "Cascadia Mono", Consolas, "SF Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #131a1c; --panel: #1b2427; --sunk: #172023; --ink: #e5ebea; --muted: #9aa8aa;
+    --line: #2f3c3e; --accent: #ec7a3f; --accent-soft: #3a261b; --link: #86b6ee;
+    --ok: #6cc592; --ok-soft: #1c3226; --warn: #e0ad4c; --warn-soft: #36291a; --sheet: #e9eded;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #131a1c; --panel: #1b2427; --sunk: #172023; --ink: #e5ebea; --muted: #9aa8aa;
+  --line: #2f3c3e; --accent: #ec7a3f; --accent-soft: #3a261b; --link: #86b6ee;
+  --ok: #6cc592; --ok-soft: #1c3226; --warn: #e0ad4c; --warn-soft: #36291a; --sheet: #e9eded;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font: 14px/1.5 var(--body);
+  padding: 0 16px 32px;
+}
+header.top {
+  display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px;
+  max-width: 1400px; margin: 0 auto; padding-block: 18px 14px;
+  border-bottom: 1px solid var(--line);
+}
+header.top h1 { font: 600 22px/1.2 var(--display); letter-spacing: .01em; margin: 0; }
+header.top h1 span { color: var(--accent); }
+header.top p { margin: 0; color: var(--muted); font-size: 13px; }
+header.top .spacer { flex: 1; }
+main {
+  max-width: 1400px; margin: 16px auto 0;
+  display: grid; grid-template-columns: minmax(0, 400px) minmax(0, 1fr); gap: 16px; align-items: start;
+}
+@media (max-width: 900px) { main { grid-template-columns: minmax(0, 1fr); } }
+.steps { display: grid; gap: 12px; }
+section.step {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px;
+  display: grid; gap: 10px;
+}
+section.step.locked { opacity: .55; }
+.step h2 { display: flex; align-items: center; gap: 10px; margin: 0; font: 600 15px/1.3 var(--display); letter-spacing: .02em; }
+.step h2 .n {
+  display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid var(--accent); color: var(--accent); font: 600 12px var(--display); flex: none;
+}
+.step.done h2 .n { background: var(--accent); color: var(--panel); }
+.step p { margin: 0; }
+.hint { color: var(--muted); font-size: 13px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+label.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; cursor: pointer; }
+label.check input { margin-top: 3px; }
+.file {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1.5px dashed var(--line);
+  border-radius: 6px; background: var(--sunk); cursor: pointer;
+}
+.file:hover, .file.drag { border-color: var(--accent); }
+.file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.file:focus-within { outline: 2px solid var(--link); outline-offset: 2px; }
+.file b { font-weight: 600; }
+.file .name { color: var(--muted); font-size: 12px; overflow-wrap: anywhere; }
+button {
+  font: 600 13px var(--body); padding: 7px 12px; border-radius: 5px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--panel); color: var(--ink);
+}
+button:hover:not(:disabled) { border-color: var(--muted); }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--link); outline-offset: 2px; }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button.primary:hover:not(:disabled) { filter: brightness(1.07); border-color: var(--accent); }
+button:disabled { opacity: .5; cursor: default; }
+button.link { border: 0; background: none; color: var(--link); padding: 0; font-weight: 600; }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 99px;
+  font-size: 12px; font-weight: 600; background: var(--sunk); color: var(--muted); border: 1px solid var(--line);
+}
+.chip.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+.chip.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+.chip.go { background: var(--accent-soft); color: var(--accent); border-color: transparent; }
+.tablewrap { max-height: 260px; overflow: auto; border: 1px solid var(--line); border-radius: 5px; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+th { position: sticky; top: 0; background: var(--sunk); font-weight: 600; font-size: 12px; color: var(--muted); }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+tr.cur td { background: var(--accent-soft); }
+td input {
+  width: 100%; min-width: 60px; font: 13px var(--mono); padding: 2px 5px; border: 1px solid var(--line);
+  border-radius: 3px; background: var(--panel); color: var(--ink);
+}
+td input.cont { color: var(--muted); font-style: italic; }
+.mono { font-family: var(--mono); }
+
+.viewer {
+  position: sticky; top: env(safe-area-inset-top, 0px); background: var(--panel); border: 1px solid var(--line);
+  border-radius: 6px; display: grid; grid-template-rows: auto auto 1fr; max-height: calc(100vh - 24px); min-height: 420px;
+}
+.viewer .bar { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 10px 14px; border-bottom: 1px solid var(--line); }
+.viewer .bar .title { font: 600 14px var(--display); letter-spacing: .02em; }
+.viewer .bar .spacer { flex: 1; }
+.prompt {
+  margin: 0; padding: 9px 14px; background: var(--accent-soft); color: var(--accent); font-weight: 600;
+  border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+}
+.prompt .pulse { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex: none; animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .25; } }
+@media (prefers-reduced-motion: reduce) { .prompt .pulse { animation: none; } }
+.stage { overflow: auto; padding: 14px; background: var(--sunk); }
+.paper { position: relative; margin: 0 auto; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.18); }
+.paper canvas { display: block; }
+.paper .overlay { position: absolute; inset: 0; }
+.paper.teach .overlay { cursor: crosshair; }
+.box { position: absolute; border-radius: 2px; }
+.box.on { background: rgba(255, 196, 40, .30); outline: 1.5px solid #d4631d; cursor: pointer; }
+.box.off { outline: 1.5px dashed #8a9699; background: rgba(138, 150, 153, .10); cursor: pointer; }
+.box.found { outline: 2px solid #2d7a4c; background: rgba(45, 122, 76, .15); }
+.box.example { outline: 2.5px solid #1d5ea8; }
+.box:hover { outline-width: 2.5px; }
+.empty { display: grid; place-items: center; min-height: 360px; color: var(--muted); text-align: center; padding: 24px; }
+.empty .big { font: 600 18px var(--display); color: var(--ink); margin-bottom: 6px; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 16px; height: 10px; margin-right: 5px; vertical-align: -1px; }
+.legend i.on { background: rgba(255,196,40,.45); outline: 1.5px solid #d4631d; }
+.legend i.off { outline: 1.5px dashed #8a9699; }
+.pager { display: flex; gap: 6px; align-items: center; font-size: 13px; font-variant-numeric: tabular-nums; }
+.pager button { padding: 4px 10px; }
+.tabs { display: flex; gap: 4px; flex-wrap: wrap; }
+.tabs button { padding: 4px 10px; font-weight: 500; }
+.tabs button[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); font-weight: 600; }
+.summary { display: grid; gap: 4px; font-size: 13px; }
+.msg { padding: 8px 10px; border-radius: 5px; font-size: 13px; }
+.msg.err { background: var(--warn-soft); color: var(--warn); }
+.msg.ok { background: var(--ok-soft); color: var(--ok); }
+details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+footer { max-width: 1400px; margin: 20px auto 0; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>As-Built <span>Linker</span></h1>
+  <p>Links structure numbers on a construction print to the framing standards book.</p>
+  <div class="spacer"></div>
+  <p>Runs entirely in this browser. Your drawings are never uploaded.</p>
+</header>
+
+<main>
+  <div class="steps">
+    <section class="step" id="step1">
+      <h2><span class="n">1</span>Framing standards book</h2>
+      <label class="file" id="bookDrop">
+        <input type="file" id="bookInput" accept="application/pdf,.pdf" multiple>
+        <span><b>Choose the standards book PDF</b><br><span class="name" id="bookName">or drop it here. Several single-structure PDFs also work.</span></span>
+      </label>
+      <label class="check" id="perFileWrap" hidden><input type="checkbox" id="perFile"> <span>Each file is one structure. Use the file name as the structure number.</span></label>
+      <p class="hint" id="bookHint">Next you'll click the structure number in the title block of one page. Every other page is read from the same spot.</p>
+      <div id="bookTableWrap" hidden>
+        <div class="row" style="justify-content: space-between">
+          <span id="bookChip" class="chip"></span>
+          <button class="link" id="reteachBook" type="button">Pick the number again</button>
+        </div>
+        <div class="tablewrap" style="margin-top:8px">
+          <table>
+            <thead><tr><th class="num">Page</th><th>Structure no.</th><th></th></tr></thead>
+            <tbody id="bookRows"></tbody>
+          </table>
+        </div>
+        <label class="check" style="margin-top:8px"><input type="checkbox" id="continuation" checked> <span>A page with no number belongs to the structure before it (multi-page standards)</span></label>
+        <p class="hint" style="margin-top:4px">Fix any wrong number by typing in the table.</p>
+      </div>
+    </section>
+
+    <section class="step locked" id="step2">
+      <h2><span class="n">2</span>As-built print</h2>
+      <label class="file" id="printDrop">
+        <input type="file" id="printInput" accept="application/pdf,.pdf" disabled>
+        <span><b>Choose the as-built / staking print PDF</b><br><span class="name" id="printName">or drop it here</span></span>
+      </label>
+      <p class="hint" id="printHint">Then click one structure number on the print. Only text the same size is linked, so span lengths, pole classes and notes are skipped.</p>
+      <div id="printOpts" hidden class="summary">
+        <label class="check"><input type="checkbox" id="sameSize" checked> <span>Only link numbers the same size as my example</span></label>
+        <label class="check"><input type="checkbox" id="sameFont"> <span>Only link numbers in the same font as my example</span></label>
+        <label class="check"><input type="checkbox" id="skipMarks" checked> <span>Skip numbers with <span class="mono">' " ° #</span> or <span class="mono">/</span> beside them (285', 1/0, #4)</span></label>
+        <div class="row"><button class="link" id="reteachPrint" type="button">Pick the example again</button></div>
+      </div>
+    </section>
+
+    <section class="step locked" id="step3">
+      <h2><span class="n">3</span>Check the matches</h2>
+      <p class="hint">Click a box on the print to switch it between linked and skipped.</p>
+      <div class="legend"><span><i class="on"></i>Will link</span><span><i class="off"></i>Skipped</span></div>
+      <div id="matchSummary" class="summary"></div>
+      <div class="tablewrap" id="stdTableWrap" hidden>
+        <table>
+          <thead><tr><th>Structure</th><th class="num">Linked</th><th>Sheets</th></tr></thead>
+          <tbody id="stdRows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="step locked" id="step4">
+      <h2><span class="n">4</span>Build the as-built PDF</h2>
+      <label class="check"><input type="checkbox" id="optHighlight" checked> <span>Highlight linked numbers on the print</span></label>
+      <label class="check"><input type="checkbox" id="optBigTap" checked> <span>Large tap areas for phones and tablets</span></label>
+      <label class="check"><input type="checkbox" id="optIndex" checked> <span>Add a "Structures used" index page</span></label>
+      <label class="check"><input type="checkbox" id="optBack" checked> <span>Add "Back to sheet" links on each standard</span></label>
+      <div class="row"><button class="primary" id="buildBtn" type="button" disabled>Build and download PDF</button></div>
+      <div id="buildMsg"></div>
+    </section>
+
+    <details>
+      <summary>No files handy? Try it with sample drawings</summary>
+      <p class="hint" style="margin-top:6px">Loads a made-up standards book and staking sheet so you can see how it works.</p>
+      <button type="button" id="sampleBtn" style="margin-top:6px">Load sample files</button>
+    </details>
+  </div>
+
+  <div class="viewer" id="viewer">
+    <div class="bar">
+      <span class="title" id="viewTitle">Preview</span>
+      <div class="tabs" id="viewTabs" hidden>
+        <button type="button" data-view="book" aria-pressed="true">Standards book</button>
+        <button type="button" data-view="print" aria-pressed="false">Print</button>
+      </div>
+      <span class="spacer"></span>
+      <div class="pager" id="pager" hidden>
+        <button type="button" id="prevPage" aria-label="Previous page">&lsaquo;</button>
+        <span id="pageLabel"></span>
+        <button type="button" id="nextPage" aria-label="Next page">&rsaquo;</button>
+        <button type="button" id="zoomOut" aria-label="Zoom out">&minus;</button>
+        <button type="button" id="zoomIn" aria-label="Zoom in">+</button>
+      </div>
+    </div>
+    <p class="prompt" id="prompt" hidden><span class="pulse"></span><span id="promptText"></span></p>
+    <div class="stage" id="stage">
+      <div class="empty" id="emptyState">
+        <div>
+          <div class="big">Start with the standards book</div>
+          <div>Choose the framing standards PDF on the left.<br>Pages show up here so you can point at the structure number.</div>
+        </div>
+      </div>
+      <div class="paper" id="paper" hidden>
+        <canvas id="canvas"></canvas>
+        <div class="overlay" id="overlay"></div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer>As-Built Linker works offline. Open the finished PDF in Adobe Acrobat Reader, Bluebeam, a web browser, or the iPhone/iPad Files app, then tap a structure number.</footer>
+
+<script>/*PDFJS*/</script>
+<script type="text/plain" id="pdfjs-worker">/*PDFJS_WORKER*/</script>
+<script>/*PDFLIB*/</script>
+<script>
+"use strict";
+(function () {
+const $ = (id) => document.getElementById(id);
+pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(
+  new Blob([$("pdfjs-worker").textContent], { type: "text/javascript" }));
+
+const store = {
+  get(k, d) { try { const v = localStorage.getItem("abl." + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem("abl." + k, JSON.stringify(v)); } catch (e) {} },
+};
+
+// ---------- text extraction ----------
+const TOKEN_RE = /[A-Za-z0-9]+(?:[.\-][A-Za-z0-9]+)*/g;
+const norm = (s) => String(s).replace(/\s+/g, "").toUpperCase();
+const mctx = document.createElement("canvas").getContext("2d");
+mctx.font = "100px Helvetica, Arial, sans-serif";
+const tw = (s) => mctx.measureText(s).width;
+
+async function extractTokens(page) {
+  const tc = await page.getTextContent();
+  const out = [];
+  for (const it of tc.items) {
+    const str = it.str;
+    if (!str || !str.trim()) continue;
+    const [a, b, c, d, e, f] = it.transform;
+    const lenU = Math.hypot(a, b) || 1;
+    const ux = a / lenU, uy = b / lenU;
+    let h = Math.hypot(c, d);
+    let vx = h ? c / h : -uy, vy = h ? d / h : ux;
+    if (!h) h = lenU;
+    const total = tw(str) || 1;
+    const W = it.width || total / 100 * h * 0.55;
+    TOKEN_RE.lastIndex = 0;
+    let m;
+    while ((m = TOKEN_RE.exec(str))) {
+      const x0 = W * tw(str.slice(0, m.index)) / total;
+      const x1 = W * tw(str.slice(0, m.index + m[0].length)) / total;
+      const pts = [];
+      for (const x of [x0, x1]) for (const y of [-0.22 * h, 0.8 * h]) pts.push([e + ux * x + vx * y, f + uy * x + vy * y]);
+      const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
+      out.push({
+        text: m[0], key: norm(m[0]),
+        rect: [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)],
+        size: h, font: it.fontName,
+        before: str[m.index - 1] || "", after: str[m.index + m[0].length] || "",
+      });
+    }
+  }
+  return out;
+}
+const center = (r) => [(r[0] + r[2]) / 2, (r[1] + r[3]) / 2];
+const inside = (r, x, y, pad = 0) => x >= r[0] - pad && x <= r[2] + pad && y >= r[1] - pad && y <= r[3] + pad;
+function tokenAt(tokens, x, y) {
+  let best = null, bd = Infinity;
+  for (const t of tokens) {
+    const pad = Math.max(2, t.size * 0.4);
+    if (!inside(t.rect, x, y, pad)) continue;
+    const [cx, cy] = center(t.rect);
+    const dd = Math.hypot(cx - x, cy - y);
+    if (dd < bd) { bd = dd; best = t; }
+  }
+  return best;
+}
+
+// ---------- state ----------
+const S = {
+  book: [],        // [{name, bytes, pdf}]
+  bookPages: [],   // [{file, index, view, tokens, auto, manual, tok}]
+  region: store.get("region", null),
+  standards: new Map(), // key -> {label, pages:[{file,index,bookPage}]}
+  print: null,     // {name, bytes, pdf, sheets:[{tokens, view}]}
+  example: store.get("example", null), // {size, font}
+  callouts: [],    // [{sheet, tok, key, auto, on}]
+  overrides: new Map(),
+  view: "book", pageIdx: 0, zoom: 1, teach: null,
+};
+
+function perFileMode() { return S.book.length > 1 && $("perFile").checked; }
+
+// ---------- loading ----------
+async function readFile(file) { return new Uint8Array(await file.arrayBuffer()); }
+async function openPdf(bytes) { return pdfjsLib.getDocument({ data: bytes.slice(), isEvalSupported: false }).promise; }
+
+async function loadBook(files) {
+  S.book = []; S.bookPages = [];
+  $("bookName").textContent = "Reading…";
+  try {
+    for (const f of files) {
+      const bytes = f.bytes || await readFile(f);
+      const pdf = await openPdf(bytes);
+      S.book.push({ name: f.name, bytes, pdf });
+    }
+    for (let fi = 0; fi < S.book.length; fi++) {
+      const pdf = S.book[fi].pdf;
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        S.bookPages.push({ file: fi, index: i - 1, view: page.view, tokens: await extractTokens(page), auto: "", manual: null, tok: null });
+      }
+    }
+  } catch (err) {
+    $("bookName").textContent = "Could not read that file: " + err.message;
+    return;
+  }
+  const pages = S.bookPages.length;
+  $("bookName").textContent = S.book.map((b) => b.name).join(", ") + ` · ${pages} page${pages === 1 ? "" : "s"}`;
+  $("perFileWrap").hidden = S.book.length < 2;
+  $("perFile").checked = S.book.length > 1;
+  const textless = S.bookPages.filter((p) => !p.tokens.length).length;
+  if (textless === pages) {
+    $("bookHint").innerHTML = "<span class='chip warn'>No text found</span> This PDF is scanned or has no text layer, so numbers can't be read automatically. Type each page's structure number in the table.";
+  }
+  $("step1").classList.add("done");
+  S.view = "book"; S.pageIdx = 0; $("viewTabs").hidden = true;
+  if (perFileMode()) finishBook();
+  else if (S.region && textless < pages) { detectAll(); finishBook(); }
+  else if (textless === pages) finishBook();
+  else { startTeach("book"); }
+  render();
+}
+
+async function loadPrint(file) {
+  $("printName").textContent = "Reading…";
+  try {
+    const bytes = file.bytes || await readFile(file);
+    const pdf = await openPdf(bytes);
+    const sheets = [];
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      sheets.push({ view: page.view, tokens: await extractTokens(page) });
+    }
+    S.print = { name: file.name, bytes, pdf, sheets };
+    S.overrides = new Map();
+  } catch (err) {
+    $("printName").textContent = "Could not read that file: " + err.message;
+    return;
+  }
+  const n = S.print.sheets.length;
+  const textless = S.print.sheets.filter((s) => !s.tokens.length).length;
+  $("printName").textContent = `${S.print.name} · ${n} sheet${n === 1 ? "" : "s"}`;
+  $("step2").classList.add("done");
+  $("viewTabs").hidden = false;
+  S.view = "print"; S.pageIdx = 0;
+  if (textless === n) {
+    $("printHint").innerHTML = "<span class='chip warn'>No text found</span> This print has no text layer. CAD prints plotted with SHX fonts turn letters into lines. Re-plot with TrueType fonts (in AutoCAD, set PDFSHX to 1) and try again.";
+    render(); return;
+  }
+  if (S.example) finishPrint(); else startTeach("print");
+  render();
+}
+
+// ---------- book: number detection ----------
+function detectOne(p) {
+  const r = S.region;
+  if (!r) return null;
+  const [vx0, vy0, vx1, vy1] = p.view;
+  const W = vx1 - vx0, H = vy1 - vy0;
+  const cx = vx0 + r.cx * W, cy = vy0 + r.cy * H;
+  const tolX = Math.max(r.w * W, r.size * 3), tolY = Math.max(r.h * H, r.size) * 1.1;
+  let best = null, bd = Infinity;
+  for (const t of p.tokens) {
+    const [tx, ty] = center(t.rect);
+    if (Math.abs(tx - cx) > tolX || Math.abs(ty - cy) > tolY) continue;
+    if (t.size < r.size * 0.6 || t.size > r.size * 1.6) continue;
+    const dd = Math.hypot((tx - cx) / tolX, (ty - cy) / tolY);
+    if (dd < bd) { bd = dd; best = t; }
+  }
+  return best;
+}
+function detectAll() {
+  for (const p of S.bookPages) { const t = detectOne(p); p.tok = t; p.auto = t ? t.text : ""; }
+}
+function teachBook(x, y) {
+  const p = S.bookPages[S.pageIdx];
+  const t = tokenAt(p.tokens, x, y);
+  if (!t) { setPrompt("No text there. Click directly on the structure number."); return false; }
+  const [vx0, vy0, vx1, vy1] = p.view;
+  const W = vx1 - vx0, H = vy1 - vy0;
+  const [cx, cy] = center(t.rect);
+  S.region = { cx: (cx - vx0) / W, cy: (cy - vy0) / H, w: (t.rect[2] - t.rect[0]) / W, h: (t.rect[3] - t.rect[1]) / H, size: t.size };
+  store.set("region", S.region);
+  detectAll();
+  finishBook();
+  return true;
+}
+function groupStandards() {
+  S.standards = new Map();
+  const cont = $("continuation").checked;
+  if (perFileMode()) {
+    S.book.forEach((b, fi) => {
+      const label = b.name.replace(/\.pdf$/i, "").split(" - ")[0].trim();
+      const pages = S.bookPages.filter((p) => p.file === fi).map((p) => ({ file: fi, index: p.index, bookPage: null }));
+      if (label) S.standards.set(norm(label), { label, pages });
+    });
+    return;
+  }
+  let prev = "";
+  S.bookPages.forEach((p, i) => {
+    const own = (p.manual != null ? p.manual : p.auto).trim();
+    const label = own || (cont ? prev : "");
+    p.effective = label; p.inherited = !own && !!label;
+    if (!label) return;
+    prev = label;
+    const key = norm(label);
+    if (!S.standards.has(key)) S.standards.set(key, { label, pages: [] });
+    S.standards.get(key).pages.push({ file: p.file, index: p.index, bookPage: i + 1 });
+  });
+}
+function finishBook() {
+  stopTeach();
+  groupStandards();
+  renderBookTable();
+  $("bookTableWrap").hidden = perFileMode();
+  $("bookHint").hidden = true;
+  unlock("step2");
+  $("printInput").disabled = false;
+  if (S.print) rescan();
+  updateChips();
+}
+function renderBookTable() {
+  const rows = $("bookRows");
+  rows.textContent = "";
+  S.bookPages.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    if (S.view === "book" && i === S.pageIdx) tr.className = "cur";
+    const td1 = document.createElement("td"); td1.className = "num"; td1.textContent = i + 1;
+    const td2 = document.createElement("td");
+    const inp = document.createElement("input");
+    inp.id = "bookNum" + i;
+    inp.value = p.manual != null ? p.manual : p.auto;
+    inp.placeholder = p.inherited ? `(${p.effective})` : "";
+    inp.setAttribute("aria-label", `Structure number on page ${i + 1}`);
+    inp.addEventListener("change", () => {
+      p.manual = inp.value.trim();
+      groupStandards(); if (S.print) rescan(); updateChips(); refreshPlaceholders(); render();
+    });
+    td2.appendChild(inp);
+    const td3 = document.createElement("td");
+    const b = document.createElement("button"); b.className = "link"; b.type = "button"; b.textContent = "View";
+    b.addEventListener("click", () => { S.view = "book"; S.pageIdx = i; render(); });
+    td3.appendChild(b);
+    tr.append(td1, td2, td3);
+    rows.appendChild(tr);
+  });
+}
+function refreshPlaceholders() {
+  S.bookPages.forEach((p, i) => { const inp = $("bookNum" + i); if (inp) inp.placeholder = p.inherited ? `(${p.effective})` : ""; });
+}
+
+// ---------- print: callouts ----------
+function teachPrint(x, y) {
+  const sheet = S.print.sheets[S.pageIdx];
+  const t = tokenAt(sheet.tokens, x, y);
+  if (!t) { setPrompt("No text there. Click directly on a structure number."); return false; }
+  if (!S.standards.has(t.key)) {
+    setPrompt(`"${t.text}" is not a structure number in the standards book. Click a different one.`);
+    return false;
+  }
+  S.example = { size: t.size, font: t.font };
+  store.set("example", S.example);
+  finishPrint();
+  return true;
+}
+function passes(t) {
+  const ex = S.example;
+  if ($("skipMarks").checked && (/['"°′″\/]/.test(t.after) || /[#\/]/.test(t.before))) return false;
+  if (ex && $("sameSize").checked && Math.abs(t.size - ex.size) > ex.size * 0.15) return false;
+  if (ex && $("sameFont").checked && t.font !== ex.font) return false;
+  return true;
+}
+function rescan() {
+  if (!S.print) return;
+  S.callouts = [];
+  S.print.sheets.forEach((sh, si) => sh.tokens.forEach((t, ti) => {
+    if (!S.standards.has(t.key)) return;
+    const id = si + ":" + ti;
+    const auto = passes(t);
+    S.callouts.push({ id, sheet: si, tok: t, key: t.key, auto, on: S.overrides.has(id) ? S.overrides.get(id) : auto });
+  }));
+  renderSummary();
+}
+function finishPrint() {
+  stopTeach();
+  $("printOpts").hidden = false;
+  $("printHint").hidden = true;
+  unlock("step3"); unlock("step4");
+  $("buildBtn").disabled = false;
+  rescan();
+  render();
+}
+function renderSummary() {
+  const on = S.callouts.filter((c) => c.on);
+  const off = S.callouts.length - on.length;
+  const used = new Map();
+  for (const c of on) {
+    if (!used.has(c.key)) used.set(c.key, { n: 0, sheets: new Set() });
+    const u = used.get(c.key); u.n++; u.sheets.add(c.sheet + 1);
+  }
+  $("matchSummary").innerHTML = "";
+  const row = document.createElement("div"); row.className = "row";
+  row.innerHTML = `<span class="chip go">${on.length} linked</span><span class="chip">${off} skipped</span><span class="chip ok">${used.size} structures used</span>`;
+  $("matchSummary").appendChild(row);
+  const tb = $("stdRows"); tb.textContent = "";
+  const keys = [...used.keys()].sort(natural);
+  for (const k of keys) {
+    const u = used.get(k);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td class="mono"></td><td class="num">${u.n}</td><td></td>`;
+    tr.children[0].textContent = S.standards.get(k).label;
+    tr.children[2].textContent = [...u.sheets].sort((a, b) => a - b).join(", ");
+    tb.appendChild(tr);
+  }
+  $("stdTableWrap").hidden = !keys.length;
+  $("step3").classList.toggle("done", on.length > 0);
+}
+function natural(a, b) { return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }); }
+
+// ---------- teach prompts ----------
+function startTeach(kind) {
+  S.teach = kind;
+  S.view = kind; S.pageIdx = Math.min(S.pageIdx, pageCount() - 1);
+  setPrompt(kind === "book"
+    ? "Click the structure number in this page's title block."
+    : "Click one structure number on the print.");
+}
+function stopTeach() { S.teach = null; $("prompt").hidden = true; }
+function setPrompt(txt) { $("promptText").textContent = txt; $("prompt").hidden = false; }
+function unlock(id) { $(id).classList.remove("locked"); }
+function updateChips() {
+  const n = S.standards.size;
+  const c = $("bookChip");
+  const missing = S.bookPages.filter((p) => !p.effective && !perFileMode()).length;
+  c.className = "chip " + (missing ? "warn" : "ok");
+  c.textContent = `${n} structure${n === 1 ? "" : "s"} found` + (missing ? ` · ${missing} page${missing === 1 ? "" : "s"} without a number` : "");
+}
+
+// ---------- viewer ----------
+let renderTask = null, renderSeq = 0;
+function pageCount() { return S.view === "book" ? S.bookPages.length : (S.print ? S.print.sheets.length : 0); }
+async function render() {
+  const seq = ++renderSeq;
+  const hasDoc = S.view === "book" ? S.bookPages.length : S.print;
+  $("emptyState").hidden = !!hasDoc; $("paper").hidden = !hasDoc; $("pager").hidden = !hasDoc;
+  document.querySelectorAll("#viewTabs button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.view === S.view)));
+  if (!hasDoc) return;
+  const n = pageCount();
+  S.pageIdx = Math.max(0, Math.min(S.pageIdx, n - 1));
+  let pdf, pno;
+  if (S.view === "book") {
+    const p = S.bookPages[S.pageIdx]; pdf = S.book[p.file].pdf; pno = p.index + 1;
+    $("viewTitle").textContent = "Standards book";
+    $("pageLabel").textContent = `Page ${S.pageIdx + 1} of ${n}`;
+    document.querySelectorAll("#bookRows tr").forEach((tr, i) => tr.classList.toggle("cur", i === S.pageIdx));
+  } else {
+    pdf = S.print.pdf; pno = S.pageIdx + 1;
+    $("viewTitle").textContent = "Print";
+    $("pageLabel").textContent = `Sheet ${pno} of ${n}`;
+  }
+  const page = await pdf.getPage(pno);
+  if (seq !== renderSeq) return;
+  const avail = Math.max(280, $("stage").clientWidth - 28);
+  const base = page.getViewport({ scale: 1 });
+  const vp = page.getViewport({ scale: (avail / base.width) * S.zoom });
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  const canvas = $("canvas");
+  canvas.width = Math.floor(vp.width * dpr); canvas.height = Math.floor(vp.height * dpr);
+  canvas.style.width = vp.width + "px"; canvas.style.height = vp.height + "px";
+  $("paper").style.width = vp.width + "px"; $("paper").style.height = vp.height + "px";
+  $("paper").classList.toggle("teach", S.teach === S.view);
+  if (renderTask) { try { renderTask.cancel(); } catch (e) {} }
+  renderTask = page.render({ canvasContext: canvas.getContext("2d"), viewport: vp, transform: dpr !== 1 ? [dpr, 0, 0, dpr, 0, 0] : null });
+  S.viewport = vp;
+  drawOverlay();
+  try { await renderTask.promise; } catch (e) { /* cancelled */ }
+}
+function vpRect(r) {
+  const [a, b, c, d] = S.viewport.convertToViewportRectangle(r);
+  return [Math.min(a, c), Math.min(b, d), Math.abs(c - a), Math.abs(d - b)];
+}
+function addBox(r, cls, title, onClick) {
+  const [x, y, w, h] = vpRect(r);
+  const el = document.createElement("div");
+  el.className = "box " + cls;
+  const pad = 2;
+  Object.assign(el.style, { left: x - pad + "px", top: y - pad + "px", width: w + 2 * pad + "px", height: h + 2 * pad + "px" });
+  if (title) el.title = title;
+  if (onClick) el.addEventListener("click", (ev) => { ev.stopPropagation(); onClick(); });
+  $("overlay").appendChild(el);
+}
+function drawOverlay() {
+  const ov = $("overlay"); ov.textContent = "";
+  if (S.teach === S.view) return;
+  if (S.view === "book") {
+    const p = S.bookPages[S.pageIdx];
+    if (p && p.tok && p.manual == null) addBox(p.tok.rect, "found", "Structure number read from this page");
+  } else if (S.print) {
+    for (const c of S.callouts) {
+      if (c.sheet !== S.pageIdx) continue;
+      const label = S.standards.get(c.key).label;
+      addBox(c.tok.rect, c.on ? "on" : "off", (c.on ? "Links to structure " : "Skipped: structure ") + label + ". Click to switch.", () => {
+        c.on = !c.on; S.overrides.set(c.id, c.on); renderSummary(); drawOverlay();
+      });
+    }
+  }
+}
+$("overlay").addEventListener("click", (ev) => {
+  if (S.teach !== S.view || !S.viewport) return;
+  const r = $("overlay").getBoundingClientRect();
+  const [x, y] = S.viewport.convertToPdfPoint(ev.clientX - r.left, ev.clientY - r.top);
+  const ok = S.view === "book" ? teachBook(x, y) : teachPrint(x, y);
+  if (ok) render();
+});
+
+// ---------- build ----------
+const { PDFDocument, StandardFonts, rgb, degrees, PDFName, PDFHexString } = PDFLib;
+const latin = (s) => String(s).replace(/[^\x20-\x7e\xa0-\xff]/g, "?");
+
+function visualMap(page) {
+  const box = page.getCropBox();
+  const rot = ((page.getRotation().angle % 360) + 360) % 360;
+  const W = box.width, H = box.height, X = box.x, Y = box.y;
+  const toUser = (vx, vy) => {
+    switch (rot) {
+      case 90: return [X + vy, Y + vx];
+      case 180: return [X + W - vx, Y + vy];
+      case 270: return [X + W - vy, Y + H - vx];
+      default: return [X + vx, Y + H - vy];
+    }
+  };
+  const vw = rot % 180 ? H : W, vh = rot % 180 ? W : H;
+  const rect = (vx0, vy0, vx1, vy1) => {
+    const [ax, ay] = toUser(vx0, vy0), [bx, by] = toUser(vx1, vy1);
+    return [Math.min(ax, bx), Math.min(ay, by), Math.max(ax, bx), Math.max(ay, by)];
+  };
+  return { rot, vw, vh, toUser, rect };
+}
+
+async function buildPdf(opts) {
+  const out = await PDFDocument.create();
+  const helv = await out.embedFont(StandardFonts.Helvetica);
+  const bold = await out.embedFont(StandardFonts.HelveticaBold);
+  const ctx = out.context;
+
+  const printDoc = await PDFDocument.load(S.print.bytes, { ignoreEncryption: true });
+  const printPages = await out.copyPages(printDoc, printDoc.getPageIndices());
+  printPages.forEach((p) => out.addPage(p));
+  const nPrint = printPages.length;
+
+  const linked = S.callouts.filter((c) => c.on);
+  const usedKeys = [...new Set(linked.map((c) => c.key))].sort((a, b) => natural(S.standards.get(a).label, S.standards.get(b).label));
+  const perIndex = 30;
+  const nIndex = opts.index ? Math.max(1, Math.ceil(usedKeys.length / perIndex)) : 0;
+  const indexPages = [];
+  for (let i = 0; i < nIndex; i++) indexPages.push(out.addPage([612, 792]));
+
+  // Copy each book file's needed pages in one pass so shared resources are stored once.
+  const need = new Map();
+  for (const k of usedKeys) for (const pg of S.standards.get(k).pages) {
+    if (!need.has(pg.file)) need.set(pg.file, new Set());
+    need.get(pg.file).add(pg.index);
+  }
+  const copied = new Map();
+  for (const [fi, set] of need) {
+    const src = await PDFDocument.load(S.book[fi].bytes, { ignoreEncryption: true });
+    const idx = [...set].sort((a, b) => a - b);
+    const pages = await out.copyPages(src, idx);
+    idx.forEach((pi, j) => copied.set(fi + ":" + pi, pages[j]));
+  }
+  const stdPages = new Map();
+  const placed = new Set();
+  for (const k of usedKeys) {
+    const list = [];
+    for (const pg of S.standards.get(k).pages) {
+      let p = copied.get(pg.file + ":" + pg.index);
+      if (placed.has(p)) { // a book page shared by two structures needs its own copy
+        const src = await PDFDocument.load(S.book[pg.file].bytes, { ignoreEncryption: true });
+        [p] = await out.copyPages(src, [pg.index]);
+      }
+      placed.add(p); out.addPage(p); list.push(p);
+    }
+    stdPages.set(k, list);
+  }
+
+  const link = (page, r, target) => {
+    const annot = ctx.obj({ Type: "Annot", Subtype: "Link", Rect: r.map((v) => Math.round(v * 100) / 100), Border: [0, 0, 0], Dest: [target.ref, "Fit"] });
+    page.node.addAnnot(ctx.register(annot));
+  };
+
+  // callouts on the print
+  for (const c of linked) {
+    const page = printPages[c.sheet];
+    const [x0, y0, x1, y1] = c.tok.rect;
+    const s = c.tok.size;
+    let pad = Math.max(1.5, s * 0.15);
+    if (opts.bigTap) pad = Math.max(pad, s * 0.6);
+    let r = [x0 - pad, y0 - pad, x1 + pad, y1 + pad];
+    if (opts.highlight) {
+      page.drawRectangle({
+        x: x0 - 1.5, y: y0 - 1.5, width: x1 - x0 + 3, height: y1 - y0 + 3,
+        color: rgb(1, 0.82, 0.2), opacity: 0.28, borderColor: rgb(0.85, 0.4, 0.1), borderWidth: Math.max(0.5, s * 0.06), borderOpacity: 0.9,
+      });
+    }
+    link(page, r, stdPages.get(c.key)[0]);
+  }
+
+  const sheetsOf = new Map();
+  for (const c of linked) {
+    if (!sheetsOf.has(c.key)) sheetsOf.set(c.key, new Set());
+    sheetsOf.get(c.key).add(c.sheet);
+  }
+
+  // index page(s)
+  const grey = rgb(0.36, 0.4, 0.42), blue = rgb(0.1, 0.33, 0.66), accent = rgb(0.77, 0.33, 0.11);
+  indexPages.forEach((page, n) => {
+    const txt = (s, x, y, size, font = helv, color = rgb(0, 0, 0)) => {
+      page.drawText(latin(s), { x, y: 792 - y, size, font, color });
+      return x + font.widthOfTextAtSize(latin(s), size);
+    };
+    const lnk = (s, x, y, size, target, font = helv) => {
+      const end = txt(s, x, y, size, font, blue);
+      link(page, [x - 3, 792 - y - 5, end + 3, 792 - y + size + 3], target);
+      return end;
+    };
+    txt("Structures Used", 48, 64, 20, bold);
+    page.drawRectangle({ x: 48, y: 792 - 74, width: 60, height: 2.5, color: accent });
+    txt(`${S.print.name}`, 48, 92, 9, helv, grey);
+    txt("Tap a structure number to open its framing standard. Tap a sheet number to go back to the print.", 48, 106, 9, helv, grey);
+    let y = 136;
+    const cols = [["Structure", 48], ["Book page", 170], ["Qty", 270], ["Used on sheet", 320]];
+    for (const [h, x] of cols) txt(h, x, y, 9, bold, grey);
+    page.drawLine({ start: { x: 48, y: 792 - y - 6 }, end: { x: 564, y: 792 - y - 6 }, thickness: 0.6, color: grey });
+    y += 24;
+    const rows = usedKeys.slice(n * perIndex, (n + 1) * perIndex);
+    for (const k of rows) {
+      const st = S.standards.get(k);
+      lnk(st.label, 48, y, 12, stdPages.get(k)[0], bold);
+      const bp = st.pages.map((p) => p.bookPage).filter(Boolean);
+      txt(bp.length ? (bp.length > 1 ? `${bp[0]}-${bp[bp.length - 1]}` : String(bp[0])) : "-", 170, y, 10);
+      txt(String(linked.filter((c) => c.key === k).length), 270, y, 10);
+      let x = 320;
+      const sh = [...sheetsOf.get(k)].sort((a, b) => a - b);
+      sh.forEach((s, i) => {
+        if (x > 540) return;
+        x = lnk(String(s + 1), x, y, 11, printPages[s]);
+        if (i < sh.length - 1) x = txt(",  ", x, y, 11);
+      });
+      y += 20;
+    }
+    if (!usedKeys.length) txt("No structure numbers were linked.", 48, y, 11);
+    if (nIndex > 1) txt(`Page ${n + 1} of ${nIndex}`, 48, 760, 8, helv, grey);
+  });
+
+  // back links on standard pages
+  if (opts.back) {
+    for (const k of usedKeys) {
+      const label = S.standards.get(k).label;
+      const sheets = [...sheetsOf.get(k)].sort((a, b) => a - b);
+      for (const page of stdPages.get(k)) {
+        const m = visualMap(page);
+        const size = Math.max(9, Math.min(14, m.vw / 60));
+        const parts = [[`Structure ${label}`, null, bold], ["    Back to sheet ", null, helv]];
+        sheets.forEach((s, i) => { parts.push([String(s + 1), printPages[s], bold]); if (i < sheets.length - 1) parts.push([",  ", null, helv]); });
+        if (indexPages.length) { parts.push(["    |    ", null, helv]); parts.push(["All structures", indexPages[0], bold]); }
+        const width = parts.reduce((w, [s, , f]) => w + f.widthOfTextAtSize(latin(s), size), 0);
+        const bx = 8, by = 6, bh = size * 1.9;
+        const [rx0, ry0, rx1, ry1] = m.rect(bx, by, bx + width + size * 1.4, by + bh);
+        page.drawRectangle({ x: rx0, y: ry0, width: rx1 - rx0, height: ry1 - ry0, color: rgb(1, 0.98, 0.9), borderColor: accent, borderWidth: 0.8 });
+        let x = bx + size * 0.7;
+        const base = by + bh * 0.68;
+        for (const [s, target, font] of parts) {
+          const t = latin(s);
+          const [ux, uy] = m.toUser(x, base);
+          page.drawText(t, { x: ux, y: uy, size, font, color: target ? blue : rgb(0, 0, 0), rotate: degrees(m.rot) });
+          const w = font.widthOfTextAtSize(t, size);
+          if (target) link(page, m.rect(x - 4, by, x + w + 4, by + bh), target);
+          x += w;
+        }
+      }
+    }
+  }
+
+  // bookmarks
+  const items = [
+    { title: "Construction print", page: printPages[0], kids: printPages.map((p, i) => ({ title: `Sheet ${i + 1}`, page: p })) },
+  ];
+  if (indexPages.length) items.push({ title: "Structures used", page: indexPages[0] });
+  if (usedKeys.length) items.push({
+    title: "Framing standards", page: stdPages.get(usedKeys[0])[0],
+    kids: usedKeys.map((k) => ({ title: `Structure ${S.standards.get(k).label}`, page: stdPages.get(k)[0] })),
+  });
+  setOutline(out, items);
+  out.setTitle(S.print.name.replace(/\.pdf$/i, "") + " - linked as-built");
+  out.setCreator("As-Built Linker");
+  return { bytes: await out.save(), linked: linked.length, structures: usedKeys.length, pages: out.getPageCount() };
+}
+
+function setOutline(doc, items) {
+  const ctx = doc.context;
+  const rootRef = ctx.nextRef();
+  const build = (list, parentRef) => {
+    const refs = list.map(() => ctx.nextRef());
+    let count = 0;
+    list.forEach((it, i) => {
+      const d = { Title: PDFHexString.fromText(it.title), Parent: parentRef, Dest: [it.page.ref, "Fit"] };
+      if (i > 0) d.Prev = refs[i - 1];
+      if (i < list.length - 1) d.Next = refs[i + 1];
+      if (it.kids && it.kids.length) {
+        const sub = build(it.kids, refs[i]);
+        d.First = sub.refs[0]; d.Last = sub.refs[sub.refs.length - 1]; d.Count = -sub.count;
+      }
+      ctx.assign(refs[i], ctx.obj(d));
+      count++;
+    });
+    return { refs, count };
+  };
+  const top = build(items, rootRef);
+  ctx.assign(rootRef, ctx.obj({ Type: "Outlines", First: top.refs[0], Last: top.refs[top.refs.length - 1], Count: top.count }));
+  doc.catalog.set(PDFName.of("Outlines"), rootRef);
+}
+
+function download(bytes, name) {
+  const url = URL.createObjectURL(new Blob([bytes], { type: "application/pdf" }));
+  const a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+$("buildBtn").addEventListener("click", async () => {
+  const btn = $("buildBtn"), msg = $("buildMsg");
+  btn.disabled = true; btn.textContent = "Building…"; msg.innerHTML = "";
+  try {
+    const opts = { highlight: $("optHighlight").checked, bigTap: $("optBigTap").checked, index: $("optIndex").checked, back: $("optBack").checked };
+    store.set("opts", opts);
+    const res = await buildPdf(opts);
+    const name = S.print.name.replace(/\.pdf$/i, "") + "_linked.pdf";
+    window.__lastBuild = res;
+    download(res.bytes, name);
+    msg.innerHTML = `<div class="msg ok"></div>`;
+    msg.firstChild.textContent = `Saved ${name}: ${res.linked} links to ${res.structures} structures, ${res.pages} pages. Check your Downloads folder.`;
+    $("step4").classList.add("done");
+  } catch (err) {
+    console.error(err);
+    msg.innerHTML = `<div class="msg err"></div>`;
+    msg.firstChild.textContent = "The PDF could not be built: " + err.message;
+  } finally {
+    btn.disabled = false; btn.textContent = "Build and download PDF";
+  }
+});
+
+// ---------- wiring ----------
+function dropZone(zoneId, inputId, onFiles) {
+  const zone = $(zoneId), input = $(inputId);
+  input.addEventListener("change", () => { if (input.files.length) onFiles([...input.files]); input.value = ""; });
+  zone.addEventListener("dragover", (e) => { e.preventDefault(); if (!input.disabled) zone.classList.add("drag"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag"));
+  zone.addEventListener("drop", (e) => {
+    e.preventDefault(); zone.classList.remove("drag");
+    if (input.disabled) return;
+    const files = [...e.dataTransfer.files].filter((f) => /\.pdf$/i.test(f.name) || f.type === "application/pdf");
+    if (files.length) onFiles(files);
+  });
+}
+dropZone("bookDrop", "bookInput", (files) => loadBook(files));
+dropZone("printDrop", "printInput", (files) => loadPrint(files[0]));
+$("perFile").addEventListener("change", () => {
+  if (perFileMode()) finishBook();
+  else if (S.region) { detectAll(); finishBook(); }
+  else { $("bookTableWrap").hidden = true; startTeach("book"); }
+  render();
+});
+$("continuation").addEventListener("change", () => { groupStandards(); refreshPlaceholders(); updateChips(); if (S.print) rescan(); drawOverlay(); });
+$("reteachBook").addEventListener("click", () => { startTeach("book"); render(); });
+$("reteachPrint").addEventListener("click", () => { startTeach("print"); render(); });
+for (const id of ["sameSize", "sameFont", "skipMarks"]) $(id).addEventListener("change", () => {
+  store.set("filters", { sameSize: $("sameSize").checked, sameFont: $("sameFont").checked, skipMarks: $("skipMarks").checked });
+  rescan(); drawOverlay();
+});
+const f = store.get("filters", null);
+if (f) { $("sameSize").checked = f.sameSize; $("sameFont").checked = f.sameFont; $("skipMarks").checked = f.skipMarks; }
+const o = store.get("opts", null);
+if (o) { $("optHighlight").checked = o.highlight; $("optBigTap").checked = o.bigTap; $("optIndex").checked = o.index; $("optBack").checked = o.back; }
+document.querySelectorAll("#viewTabs button").forEach((b) => b.addEventListener("click", () => {
+  if (S.view !== b.dataset.view) { S.view = b.dataset.view; S.pageIdx = 0; render(); }
+}));
+$("prevPage").addEventListener("click", () => { S.pageIdx--; render(); });
+$("nextPage").addEventListener("click", () => { S.pageIdx++; render(); });
+$("zoomIn").addEventListener("click", () => { S.zoom = Math.min(6, S.zoom * 1.4); render(); });
+$("zoomOut").addEventListener("click", () => { S.zoom = Math.max(0.5, S.zoom / 1.4); render(); });
+let resizeT;
+window.addEventListener("resize", () => { clearTimeout(resizeT); resizeT = setTimeout(render, 150); });
+
+// ---------- sample files ----------
+async function makeSample() {
+  const book = await PDFDocument.create();
+  const hv = await book.embedFont(StandardFonts.Helvetica), hb = await book.embedFont(StandardFonts.HelveticaBold);
+  const specs = [
+    ["1", "SINGLE PHASE TANGENT"], ["2", "SINGLE PHASE SMALL ANGLE"], ["5", "SINGLE PHASE DEADEND"],
+    ["12", "THREE PHASE CROSSARM TANGENT"], ["", "MATERIAL LIST (CONT.)"], ["14", "THREE PHASE ANGLE"],
+    ["21", "THREE PHASE DEADEND"], ["30", "DOWN GUY AND ANCHOR"],
+  ];
+  for (const [num, title] of specs) {
+    const p = book.addPage([612, 792]);
+    p.drawRectangle({ x: 24, y: 24, width: 564, height: 744, borderColor: rgb(0, 0, 0), borderWidth: 1.2 });
+    if (num) {
+      p.drawLine({ start: { x: 306, y: 200 }, end: { x: 306, y: 620 }, thickness: 7 });
+      p.drawLine({ start: { x: 190, y: 580 }, end: { x: 422, y: 580 }, thickness: 5 });
+      for (const x of [205, 306, 407]) p.drawCircle({ x, y: 594, size: 8, borderColor: rgb(0, 0, 0), borderWidth: 1 });
+    } else {
+      ["a. Crossarm, 8 ft", "b. Pin insulator (3)", "c. Bolt, 5/8 x 12", "d. Washer, square"].forEach((t, i) => p.drawText(t, { x: 72, y: 680 - i * 20, size: 11, font: hv }));
+    }
+    p.drawRectangle({ x: 372, y: 36, width: 204, height: 84, borderColor: rgb(0, 0, 0), borderWidth: 1 });
+    p.drawText("SAMPLE CO-OP DISTRIBUTION STANDARDS", { x: 380, y: 106, size: 7, font: hv });
+    p.drawText(title, { x: 380, y: 90, size: 8, font: hb });
+    p.drawText("STRUCTURE NO.", { x: 380, y: 52, size: 8, font: hv });
+    if (num) p.drawText(num, { x: 460, y: 50, size: 16, font: hb });
+  }
+  const pr = await PDFDocument.create();
+  const pv = await pr.embedFont(StandardFonts.Helvetica), pb = await pr.embedFont(StandardFonts.HelveticaBold);
+  const sheets = [
+    [["P-1041", "5", "40-4"], ["P-1042", "1", "40-4"], ["P-1043", "2", "40-4"], ["P-1044", "12", "45-3"], ["P-1045", "14", "45-3"], ["P-1046", "21", "45-3"]],
+    [["P-1047", "12", "45-3"], ["P-1048", "12", "45-3"], ["P-1049", "30", "45-3"], ["P-1050", "21", "45-3"]],
+  ];
+  sheets.forEach((poles, si) => {
+    const p = pr.addPage([1224, 792]);
+    p.drawRectangle({ x: 18, y: 18, width: 1188, height: 756, borderColor: rgb(0, 0, 0), borderWidth: 1.5 });
+    const y = 430;
+    const xs = poles.map((_, i) => 120 + i * 185);
+    p.drawLine({ start: { x: xs[0], y }, end: { x: xs[xs.length - 1], y }, thickness: 1.2 });
+    poles.forEach(([id, str, cls], i) => {
+      const x = xs[i];
+      p.drawCircle({ x, y, size: 5, color: rgb(0, 0, 0) });
+      p.drawText(id, { x: x - 20, y: y + 18, size: 8, font: pv });
+      p.drawText(cls, { x: x - 20, y: y - 22, size: 8, font: pv });
+      p.drawCircle({ x: x + 4, y: y + 60, size: 13, borderColor: rgb(0, 0, 0), borderWidth: 1 });
+      const w = pb.widthOfTextAtSize(str, 12);
+      p.drawText(str, { x: x + 4 - w / 2, y: y + 56, size: 12, font: pb });
+      if (i < poles.length - 1) p.drawText(`${[285, 300, 312, 275, 290][i]}'`, { x: x + 80, y: y + 6, size: 8, font: pv });
+    });
+    p.drawText("1/0 ACSR 3-PH  +  1/0 ACSR NEUTRAL", { x: 140, y: y - 60, size: 8, font: pv });
+    p.drawText("NOTES: 1. ALL POLES CLASS AS SHOWN.  2. SEE STANDARD 30 FOR GUYING.  5. SPANS IN FEET.", { x: 60, y: 120, size: 8, font: pv });
+    p.drawRectangle({ x: 900, y: 30, width: 294, height: 90, borderColor: rgb(0, 0, 0), borderWidth: 1 });
+    p.drawText("SAMPLE ELECTRIC CO-OP", { x: 910, y: 98, size: 12, font: pb });
+    p.drawText("3-PH LINE EXTENSION - AS-BUILT", { x: 910, y: 80, size: 9, font: pv });
+    p.drawText(`SHEET ${si + 1} OF ${sheets.length}`, { x: 910, y: 62, size: 9, font: pv });
+  });
+  return { book: await book.save(), print: await pr.save() };
+}
+$("sampleBtn").addEventListener("click", async () => {
+  const smp = await makeSample();
+  S.region = null; S.example = null;
+  await loadBook([{ name: "Sample standards book.pdf", bytes: smp.book }]);
+  // point at the number in the title block for the user, as they would with their own book
+  teachBook(464, 56); render();
+  await loadPrint({ name: "Sample as-built.pdf", bytes: smp.print });
+  teachPrint(679, 490); render();
+  $("sampleBtn").textContent = "Sample loaded";
+});
+
+// test hook
+window.__abl = { S, teachBook, teachPrint, loadBook, loadPrint, buildPdf, render };
+render();
+})();
+</script>
+</body>
+</html>
