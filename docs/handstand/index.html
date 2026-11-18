@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#EDF1F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E1514" media="(prefers-color-scheme: dark)">
+<meta name="description" content="Beginner calisthenics and handstand plan with guided workouts, timers, XP and streaks.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;font-family:system-ui,sans-serif;font-size:14px}img{max-width:100%}[hidden]{display:none!important}
+</style>
+<title>Handstand Plan</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Handstand Plan">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Inter:wght@400;500;600&display=swap">
+<style>
+/* Layout: one phone column, sticky header with level strip, bottom tab bar, timer dock above the tabs, full-screen guided workout */
+:root {
+  --bg: #EDF1F0;
+  --surface: #FFFFFF;
+  --ink: #13201E;
+  --muted: #5A6B67;
+  --line: #D3DDDA;
+  --accent: #0A7563;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #D4ECE6;
+  --warm: #B9520B;
+  --warm-soft: #FAE4D3;
+  --gold: #B88207;
+  --gold-soft: #F8EBC6;
+  --font-display: "Archivo", "Arial Narrow", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --tabbar: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E1514; --surface: #172120; --ink: #E4EDEB; --muted: #93A6A2; --line: #2A3734;
+    --accent: #3DC4A7; --accent-ink: #052019; --accent-soft: #17392F; --warm: #F28C47; --warm-soft: #3B2415;
+    --gold: #E8B83A; --gold-soft: #3A2F12;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E1514; --surface: #172120; --ink: #E4EDEB; --muted: #93A6A2; --line: #2A3734;
+  --accent: #3DC4A7; --accent-ink: #052019; --accent-soft: #17392F; --warm: #F28C47; --warm-soft: #3B2415;
+  --gold: #E8B83A; --gold-soft: #3A2F12;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { background: var(--bg); }
+body {
+  color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45;
+  -webkit-tap-highlight-color: transparent;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--bg); }
+body.guiding { overflow: hidden; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { opacity: .45; cursor: default; }
+button:focus-visible, summary:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.app {
+  max-width: 560px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 calc(var(--tabbar) + 24px + env(safe-area-inset-bottom, 0px));
+}
+body.timing .app { padding-bottom: calc(var(--tabbar) + 150px + env(safe-area-inset-bottom, 0px)); }
+
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; }
+.eyebrow { font-family: var(--font-display); font-stretch: 85%; font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg);
+  padding-block: 12px 10px; display: grid; gap: 10px;
+}
+.brand { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.brand h1 { white-space: nowrap; font-size: 22px; font-weight: 800; font-stretch: 75%; letter-spacing: -.01em; text-transform: uppercase; }
+.xp { display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; align-items: center; min-width: 0; flex: 0 1 190px; border: 0; background: transparent; padding: 0; text-align: left; }
+.lv { grid-row: 1 / span 2; font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: 13px; background: var(--gold-soft); color: var(--ink); border: 1.5px solid var(--gold); border-radius: 9px; padding: 4px 7px; line-height: 1.1; text-align: center; }
+.lv b { display: block; font-size: 20px; }
+.xpname { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; justify-content: space-between; gap: 6px; }
+.xpname span { color: var(--muted); font-weight: 500; font-variant-numeric: tabular-nums; }
+.xpbar { height: 6px; border-radius: 9px; background: var(--line); overflow: hidden; }
+.xpbar span { display: block; height: 100%; background: var(--gold); transition: width .5s; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.day {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px;
+  padding: 6px 0 7px; display: grid; justify-items: center; gap: 2px; min-width: 0;
+}
+.day b { font-family: var(--font-display); font-stretch: 80%; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+.day small { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.day i { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+.day.hard i { background: transparent; border: 1.5px solid var(--muted); }
+.day.done i { background: var(--accent); border: 0; }
+.day.today { border-color: var(--accent); }
+.day[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.day[aria-pressed="true"] small { color: inherit; opacity: .7; }
+
+/* views */
+.view { display: grid; gap: 16px; padding-top: 6px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.session-head { display: grid; gap: 6px; }
+.session-head h2 { font-size: 30px; font-weight: 800; font-stretch: 78%; line-height: 1.02; text-transform: uppercase; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; background: var(--accent-soft); color: var(--ink); }
+.chip.warm { background: var(--warm-soft); }
+.chip.gold { background: var(--gold-soft); }
+.lede { color: var(--muted); margin: 0; }
+.nudge { margin: 0; font-weight: 600; font-size: 15px; padding: 10px 12px; border-radius: 10px; background: var(--gold-soft); }
+.why { margin: 0; font-style: italic; color: var(--muted); font-size: 14px; }
+.why b { font-style: normal; color: var(--ink); }
+.bar { height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.bar > span { display: block; height: 100%; background: var(--accent); width: 0; transition: width .3s; }
+.progress-row { display: flex; justify-content: space-between; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.block { display: grid; gap: 8px; }
+.block-title { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; flex-wrap: wrap; padding-inline: 2px; }
+.block-title h3 { font-size: 17px; font-weight: 700; font-stretch: 85%; text-transform: uppercase; letter-spacing: .02em; }
+.block-title span { font-size: 12px; color: var(--muted); }
+
+.ex { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 12px 12px 14px; display: grid; gap: 10px; }
+.ex.complete { border-color: var(--accent); }
+.ex-top { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; }
+.ex-name { font-weight: 600; font-size: 16px; min-width: 0; }
+.code { font-family: var(--font-display); font-stretch: 80%; font-weight: 700; font-size: 12px; color: var(--accent); margin-left: 4px; }
+.ex-dose { font-family: var(--font-display); font-stretch: 85%; font-weight: 700; font-size: 17px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ex-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.pips { display: flex; gap: 6px; flex-wrap: wrap; }
+.pip {
+  width: 38px; height: 38px; border-radius: 10px; border: 1.5px solid var(--line); background: transparent;
+  font-family: var(--font-display); font-weight: 700; font-size: 15px; color: var(--muted); font-variant-numeric: tabular-nums;
+}
+.pip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.check {
+  display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--line); background: transparent;
+  border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 14px;
+}
+.check.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.go {
+  border: 0; border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 14px;
+  background: var(--warm-soft); color: var(--ink); display: inline-flex; gap: 6px; align-items: center;
+}
+.go svg { width: 14px; height: 14px; fill: var(--warm); }
+details.cue summary { list-style: none; font-size: 13px; color: var(--muted); cursor: pointer; }
+details.cue summary::-webkit-details-marker { display: none; }
+details.cue summary::before { content: "+ "; font-weight: 700; color: var(--accent); }
+details.cue[open] summary::before { content: "– "; }
+details.cue p, details.cue ol, details.cue ul { margin: 6px 0 0; color: var(--ink); font-size: 14px; }
+details.cue ol, details.cue ul { padding-left: 20px; display: grid; gap: 4px; }
+.note { font-size: 13px; color: var(--muted); padding-inline: 2px; margin: 0; }
+
+.btn {
+  border: 0; border-radius: 12px; padding: 13px 16px; font-weight: 700; font-size: 15px;
+  background: var(--accent); color: var(--accent-ink); width: 100%;
+}
+.btn.big { padding: 18px 16px; font-size: 19px; font-family: var(--font-display); font-stretch: 85%; text-transform: uppercase; letter-spacing: .03em; display: flex; align-items: center; justify-content: center; gap: 10px; }
+.btn.big svg { width: 20px; height: 20px; fill: currentColor; }
+.btn.ghost { background: transparent; border: 1.5px solid var(--line); color: var(--ink); }
+.btn.soft { background: var(--gold-soft); color: var(--ink); border: 1.5px solid var(--gold); }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+.row > * { flex: 1 1 140px; }
+
+/* moves & lists */
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 3px; gap: 3px; }
+.seg button { border: 0; background: transparent; border-radius: 9px; padding: 8px 4px; font-weight: 600; font-size: 14px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.list { display: grid; gap: 0; }
+.li { display: grid; grid-template-columns: 44px 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); }
+.li:first-child { border-top: 0; padding-top: 0; }
+.li .tag { font-family: var(--font-display); font-stretch: 80%; font-weight: 800; font-size: 18px; color: var(--accent); line-height: 1.2; }
+.li b { display: block; font-weight: 600; }
+.li p { margin: 2px 0 0; color: var(--muted); font-size: 14px; }
+
+/* handstand steps */
+.steps { display: grid; gap: 8px; }
+.step {
+  display: grid; grid-template-columns: 40px 1fr; gap: 12px; align-items: start; text-align: left;
+  border: 1.5px solid var(--line); background: var(--surface); border-radius: 12px; padding: 12px;
+}
+.step .n { font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: 32px; line-height: .9; color: var(--muted); }
+.step b { display: block; font-size: 16px; }
+.step span { color: var(--muted); font-size: 14px; }
+.step.past .n { color: var(--accent); }
+.step.cur { border-color: var(--accent); background: var(--accent-soft); }
+.step.cur .n { color: var(--accent); }
+.step .you { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); }
+ul.rules { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+
+/* wins */
+.lvl-card { display: grid; grid-template-columns: auto 1fr; gap: 6px 16px; align-items: center; }
+.lvl-num { grid-row: 1 / span 3; width: 84px; height: 84px; border-radius: 20px; background: var(--gold-soft); border: 2px solid var(--gold); display: grid; place-content: center; text-align: center; }
+.lvl-num small { font-family: var(--font-display); font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.lvl-num b { font-family: var(--font-display); font-stretch: 70%; font-weight: 800; font-size: 44px; line-height: .9; }
+.lvl-card h2 { font-size: 24px; font-stretch: 78%; text-transform: uppercase; line-height: 1.05; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 10px; display: grid; gap: 2px; min-width: 0; }
+.stat b { font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: 30px; line-height: 1; font-variant-numeric: tabular-nums; }
+.stat small { font-size: 12px; color: var(--muted); }
+.weekdots { display: flex; gap: 8px; }
+.weekdots i { flex: 1; height: 14px; border-radius: 7px; background: var(--line); }
+.weekdots i.on { background: var(--accent); }
+.badges { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.badge { border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 8px; display: grid; justify-items: center; text-align: center; gap: 6px; background: var(--surface); min-width: 0; }
+.badge svg { width: 34px; height: 34px; }
+.badge .ring { fill: var(--line); }
+.badge .glyph { fill: none; stroke: var(--muted); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.badge b { font-size: 13px; line-height: 1.2; }
+.badge small { font-size: 11px; color: var(--muted); line-height: 1.3; }
+.badge.got { border-color: var(--gold); background: var(--gold-soft); }
+.badge.got .ring { fill: var(--gold); }
+.badge.got .glyph { stroke: var(--surface); }
+textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid var(--line); border-radius: 10px; padding: 10px; font: inherit; color: var(--ink); background: var(--bg); }
+
+/* timer */
+.clock-big { font-family: var(--font-display); font-stretch: 70%; font-weight: 800; font-size: 96px; line-height: 1; text-align: center; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.presets { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.preset { border: 1.5px solid var(--line); background: var(--surface); border-radius: 12px; padding: 12px 4px; display: grid; justify-items: center; }
+.preset b { font-family: var(--font-display); font-stretch: 80%; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.preset small { font-size: 11px; color: var(--muted); }
+
+.dock {
+  position: fixed; left: 0; right: 0; z-index: 25;
+  bottom: calc(var(--tabbar) + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 8px;
+}
+.dock-in {
+  max-width: 528px; margin: 0 auto; border-radius: 16px; padding: 12px 14px;
+  background: var(--ink); color: var(--bg); display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center;
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+}
+.dock .phase { font-family: var(--font-display); font-stretch: 85%; font-weight: 700; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+.dock .phase.hold { color: var(--accent); }
+.dock .phase.rest, .dock .phase.ready { color: var(--warm); }
+.dock .lbl { font-size: 14px; opacity: .85; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.dock .t { grid-row: 1 / span 2; grid-column: 2; font-family: var(--font-display); font-stretch: 72%; font-weight: 800; font-size: 54px; line-height: 1; font-variant-numeric: tabular-nums; }
+.dock .acts { grid-column: 1 / -1; display: flex; gap: 8px; margin-top: 6px; }
+.dock .acts button { flex: 1; border: 1px solid color-mix(in srgb, var(--bg) 30%, transparent); background: transparent; color: var(--bg); border-radius: 10px; padding: 8px; font-weight: 600; font-size: 14px; }
+.dock .dbar { grid-column: 1 / -1; height: 4px; border-radius: 9px; background: color-mix(in srgb, var(--bg) 22%, transparent); overflow: hidden; }
+.dock .dbar span { display: block; height: 100%; background: var(--warm); width: 0; }
+.dock .dbar.hold span { background: var(--accent); }
+
+/* guided workout */
+.guide {
+  position: fixed; inset: 0; z-index: 50; background: var(--bg); overflow-y: auto;
+  padding-top: calc(env(safe-area-inset-top, 0px) + 12px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.guide-in { max-width: 520px; margin: 0 auto; min-height: 100%; display: grid; grid-template-rows: auto 1fr auto; gap: 18px; }
+.g-top { display: grid; grid-template-columns: auto 1fr; gap: 12px; align-items: center; }
+.g-close { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 12px; font-weight: 600; font-size: 14px; }
+.g-steps { display: flex; gap: 4px; }
+.g-steps i { flex: 1; height: 6px; border-radius: 4px; background: var(--line); }
+.g-steps i.on { background: var(--accent); }
+.g-steps i.cur { background: var(--gold); }
+.g-body { display: grid; align-content: center; gap: 14px; text-align: center; }
+.g-body h2 { font-size: clamp(34px, 10vw, 48px); font-weight: 800; font-stretch: 72%; text-transform: uppercase; line-height: .98; }
+.g-set { font-family: var(--font-display); font-stretch: 85%; font-weight: 700; font-size: 20px; }
+.g-set span { color: var(--muted); font-weight: 600; }
+.g-cue { margin: 0 auto; max-width: 34ch; color: var(--muted); font-size: 15px; }
+.g-list { text-align: left; margin: 0 auto; padding-left: 20px; display: grid; gap: 4px; font-size: 14px; max-width: 40ch; }
+.g-clock { font-family: var(--font-display); font-stretch: 68%; font-weight: 800; font-size: clamp(96px, 34vw, 150px); line-height: .9; font-variant-numeric: tabular-nums; }
+.g-phase { font-family: var(--font-display); font-weight: 800; font-size: 16px; letter-spacing: .1em; text-transform: uppercase; }
+.g-phase.hold { color: var(--accent); }
+.g-phase.rest, .g-phase.ready { color: var(--warm); }
+.g-acts { display: grid; gap: 10px; }
+.g-link { border: 0; background: transparent; color: var(--muted); font-weight: 600; font-size: 14px; padding: 6px; text-decoration: underline; text-underline-offset: 3px; }
+.g-done .trophy { width: 96px; height: 96px; margin: 0 auto; }
+.g-done .trophy .ring { fill: var(--gold); }
+.g-done .trophy .glyph { fill: none; stroke: var(--surface); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.g-xp { font-family: var(--font-display); font-stretch: 75%; font-weight: 800; font-size: 40px; color: var(--gold); }
+
+/* tab bar */
+.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 26; background: var(--surface); border-top: 1px solid var(--line);
+  padding-left: max(8px, env(safe-area-inset-left, 0px)); padding-right: max(8px, env(safe-area-inset-right, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tabs-in { max-width: 560px; margin: 0 auto; display: grid; grid-template-columns: repeat(5, 1fr); height: var(--tabbar); }
+.tab { border: 0; background: transparent; display: grid; justify-items: center; align-content: center; gap: 3px; color: var(--muted); font-size: 11px; font-weight: 600; min-width: 0; }
+.tab svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab[aria-current="page"] { color: var(--accent); }
+
+.rest-day { text-align: center; padding: 28px 16px; }
+.rest-day .big { font-family: var(--font-display); font-stretch: 72%; font-weight: 800; font-size: 64px; text-transform: uppercase; line-height: 1; }
+.install { font-size: 14px; }
+.install ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.toast { position: fixed; left: 50%; top: calc(env(safe-area-inset-top, 0px) + 12px); transform: translateX(-50%); z-index: 70; background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 99px; font-size: 14px; font-weight: 600; max-width: calc(100% - 32px); text-align: center; }
+.pop { position: fixed; z-index: 65; pointer-events: none; font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--gold); animation: pop .9s ease-out forwards; }
+@keyframes pop { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, -48px); opacity: 0; } }
+#confetti { position: fixed; inset: 0; z-index: 60; pointer-events: none; width: 100%; height: 100%; }
+@media (prefers-reduced-motion: reduce) { .bar > span, .xpbar span { transition: none; } .pop { animation-duration: .01s; } }
+@media (max-width: 380px) { .session-head h2 { font-size: 26px; } .clock-big { font-size: 80px; } .pip { width: 34px; height: 34px; } .xp { flex-basis: 170px; } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand"><h1>Handstand Plan</h1><button class="xp" id="xp" data-tab="wins" aria-label="Your level"></button></div>
+    <div class="days" id="days" role="group" aria-label="Day of the week"></div>
+  </header>
+  <main id="main"></main>
+</div>
+
+<div class="dock" id="dock" hidden>
+  <div class="dock-in">
+    <div class="phase" id="dPhase">Hold</div>
+    <div class="t" id="dTime">0:30</div>
+    <div class="lbl" id="dLabel">Hollow body hold</div>
+    <div class="dbar" id="dBar"><span id="dFill"></span></div>
+    <div class="acts">
+      <button id="dPause">Pause</button>
+      <button id="dPlus">+15 s</button>
+      <button id="dSkip">Skip</button>
+      <button id="dStop">Stop</button>
+    </div>
+  </div>
+</div>
+
+<div class="guide" id="guide" hidden role="dialog" aria-modal="true" aria-label="Guided workout"><div class="guide-in" id="guideIn"></div></div>
+<canvas id="confetti" hidden></canvas>
+
+<nav class="tabs" aria-label="Sections">
+  <div class="tabs-in">
+    <button class="tab" data-tab="today"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 9.5h17M8 3v4M16 3v4M8.5 14.5l2.2 2.2 4.8-4.8"/></svg>Today</button>
+    <button class="tab" data-tab="timer"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M18.5 6.5l1.5-1.5"/></svg>Timer</button>
+    <button class="tab" data-tab="moves"><svg viewBox="0 0 24 24"><path d="M5 4.5h11a3 3 0 0 1 3 3v12H8a3 3 0 0 1-3-3z"/><path d="M5 16.5a3 3 0 0 1 3-3h11M9 8.5h6"/></svg>Moves</button>
+    <button class="tab" data-tab="handstand"><svg viewBox="0 0 24 24"><circle cx="12" cy="19" r="2"/><path d="M12 15.5V5M12 5l-2.5-2.5M12 5l2.5-2.5M8 21.5h-3M19 21.5h-3M12 12l-4 4.5M12 12l4 4.5"/></svg>Handstand</button>
+    <button class="tab" data-tab="wins"><svg viewBox="0 0 24 24"><path d="M7.5 4h9v5a4.5 4.5 0 0 1-9 0z"/><path d="M7.5 6H4.5a3 3 0 0 0 3 4M16.5 6h3a3 3 0 0 1-3 4M12 13.5V17M8.5 20.5h7M10 17h4l.5 3.5h-5z"/></svg>Wins</button>
+  </div>
+</nav>
+
+<script>
+"use strict";
+/* ---------- plan content (from "Beginner Calisthenics & Handstand Plan") ---------- */
+const MOVES = {
+  M1: { name: "Hollow body hold", cue: "Lower back pressed into the floor, ribs down, arms overhead, legs straight and low." },
+  M2: { name: "Chest-to-wall handstand hold", cue: "Hands about 15 cm from the wall, body in one straight line, shoulders pushed tall, chest facing the wall." },
+  M3: { name: "Pike push-up", cue: "Hips high in an upside-down V, head travels between the hands, elbows at about 45 degrees." },
+  M4: { name: "Inverted row (under a sturdy table)", short: "Inverted row", cue: "Body in one straight line, pull the chest to the table edge, squeeze the shoulder blades." },
+  M5: { name: "Push-up (knee or incline, then full)", short: "Push-up", cue: "Hands under shoulders, body straight, chest to the floor with control. Knee or incline push-ups are fine." },
+  M6: { name: "Squat and split squat", cue: "Knees track over the toes, full-foot contact, control the way down." },
+  M7: { name: "Glute bridge", cue: "Feet flat, drive through the heels, squeeze at the top, no arching of the lower back." },
+  M8: { name: "Plank", cue: "Ribs down, glutes tight, shoulders over the hands." },
+  Y:    { name: "Prone Y raise", cue: "Lie face down, lift the chest, and sweep the arms overhead into a Y, squeezing the shoulder blades. Replaces pulling work when there is no bar." },
+  LSIT: { name: "Tuck L-sit", cue: "Sit on the floor, press the hands down beside the hips, and lift the bottom off the floor with knees tucked." },
+  PLAN: { name: "Planche lean", cue: "Push-up position, lean the shoulders forward past the hands, arms straight. Loads the wrists, so stop if you feel sharp pain." },
+  ARCH: { name: "Arch hold", cue: "Lie face down, lift the chest and legs together, arms overhead." },
+  PIST: { name: "Assisted pistol squat", cue: "Hold a door frame or chair for support." },
+  SQH:  { name: "Bottom-of-squat hold", cue: "Heels down, elbows pressing the knees out, hold a door frame if needed." },
+  PIKE: { name: "Pike fold", cue: "Sit with legs straight and reach for the toes." },
+  STRD: { name: "Straddle stretch", cue: "Sit with legs wide and fold forward." },
+  WSO:  { name: "Wall shoulder opener", cue: "Hands on a wall at hip height, walk back, and press the chest toward the floor." },
+};
+const CORE_CODES = ["M1","M2","M3","M4","M5","M6","M7","M8"];
+const EXTRA_CODES = ["Y","LSIT","PLAN","ARCH","PIST"];
+
+const WARMUP = [
+  ["W1", "Wrist circles", "10 each direction. Warms the wrist joint."],
+  ["W2", "Wrist rocks", "Hands flat on the floor, fingers forward, rock forward and back 10 times. Builds wrist extension for bearing weight."],
+  ["W3", "Wrist flexor and extensor stretch", "Arm straight, gently pull the fingers back, then down, 20 s per side each way. Eases forearm tightness."],
+  ["W4", "Shoulder circles and arm swings", "10 each direction. Opens the shoulders."],
+  ["W5", "Cat-cow", "8 slow reps. Mobilises the spine."],
+  ["W6", "Thread-the-needle", "5 per side. Rotates the upper back."],
+  ["W7", "Scapular push-ups", "Arms straight, only the shoulder blades move, 2 x 10. Wakes up the shoulder blades."],
+  ["W8", "Bodyweight squat and leg swings", "10 squats and 10 swings per leg. Warms the hips and legs."],
+];
+const MOBILITY = [
+  ["Hip flexor lunge stretch", "Back knee on a towel, tuck the pelvis under, and lean forward.", "2 x 45 s per side"],
+  ["Deep squat hold", "Heels down, elbows pressing the knees out, hold a door frame if needed.", "2 x 45 s"],
+  ["Pike fold", "Sit with legs straight and reach for the toes.", "2 x 45 s"],
+  ["Straddle fold", "Sit with legs wide and fold forward from the hips.", "2 x 45 s"],
+  ["Figure-4 stretch", "Lie on your back, cross one ankle over the opposite knee, and pull the legs toward the chest.", "2 x 45 s per side"],
+  ["Puppy pose", "On all fours, walk the hands forward and sink the chest toward the floor.", "2 x 45 s"],
+  ["Wall shoulder opener", "Hands on a wall at hip height, walk back, and press the chest toward the floor.", "2 x 45 s"],
+  ["Ankle rocks", "Facing a wall, drive the knee toward it with the heel down.", "10 per side"],
+  ["Wrist stretch (W3)", "Arm straight, pull the fingers back, then down.", "20 s per side, each direction"],
+];
+const MOBILITY_RULES = [
+  "Stretch to mild tension, never sharp pain, and breathe slowly.",
+  "Do not bounce. Hold steady and ease a little deeper as the muscle relaxes.",
+  "Consistency matters most. Expect noticeable gains in 4-8 weeks of daily practice.",
+];
+const HS_STEPS = [
+  ["Hollow hold and wrist prep", "Hold M1 and warm up the wrists every session.", "M1"],
+  ["Pike holds", "Feet on the floor or a low box, hips stacked over the shoulders, as in M3.", "M3"],
+  ["Chest-to-wall holds", "Walk the feet up the wall from a push-up position and hold M2.", "M2"],
+  ["Back-to-wall kick-ups", "Kick up, hold the line from M2, and come down with control.", "M2"],
+  ["Freestanding attempts", "Kick up away from the wall and learn to bail out with a cartwheel or a step-out.", null],
+];
+const PROGRESSION_RULES = [
+  "When you reach the top of the rep range on every set, move to a harder variation (for example, push-ups to feet-elevated push-ups).",
+  "Warm up the wrists every session, and stop if you feel sharp pain.",
+  "Short, frequent handstand practice beats one long session.",
+  "If you have a pull-up bar, add dead hangs and then pull-ups to the Pull block.",
+];
+const GYMNAST_RULES = [
+  "Keep your body tight, with toes pointed and legs straight, in every hold.",
+  "Planche leans load the wrists, so stop if you feel sharp pain.",
+  "When you hit the top of a hold or rep range on every set, move to the next harder version.",
+];
+
+// item kinds: warm (warm-up checklist), mob (mobility checklist), ex (sets), hs (handstand, current step)
+// h = hold seconds for the timer, rest = rest seconds after a set
+const W = (extra) => ({ k: "warm", id: "warm", extra });
+const MOB = (label) => ({ k: "mob", id: "mob", label });
+const SESSIONS = {
+  mon: { name: "Full-body A", focus: "Push focus", mins: 45, hard: true, blocks: [{ items: [
+    W(), { k: "ex", id: "pu", m: "M5", s: 4, r: "8-12", rest: 75 },
+    { k: "ex", id: "pike", m: "M3", s: 3, r: "6-10", rest: 75 },
+    { k: "ex", id: "row", m: "M4", s: 3, r: "8-12", rest: 75 },
+    { k: "ex", id: "sq", m: "M6", s: 3, r: "10-15", rest: 60, name: "Squat" },
+    { k: "ex", id: "hollow", m: "M1", s: 3, h: 30, rest: 45 },
+    { k: "hs", id: "hs", s: 4, h: 25, r: "20-30 s", rest: 60 },
+    MOB(),
+  ]}]},
+  tue: { name: "Handstand and core", focus: "Skill day", mins: 30, blocks: [{ items: [
+    W(true), { k: "hs", id: "hs", s: 6, h: 25, r: "20-30 s", rest: 60, note: "60 s rest between holds." },
+    { k: "ex", id: "hollow", m: "M1", s: 3, h: 30, rest: 45 },
+    { k: "ex", id: "arch", m: "ARCH", s: 3, h: 30, rest: 45 },
+    { k: "ex", id: "plank", m: "M8", s: 3, h: 40, r: "30-45 s", rest: 45 },
+    MOB(),
+  ]}]},
+  wed: { name: "Gymnast-style session", focus: "Skills, strength, flexibility", mins: 50, hard: true, gym: true,
+    intro: "Train in the order gymnasts do: skills while fresh, then strength positions, then flexibility. Stop every set while your form is still clean. No separate mobility routine today.",
+    blocks: [
+      { t: "Warm-up", sub: "8 min", items: [ W(), { k: "ex", id: "sqh", m: "SQH", s: 2, h: 20, rest: 20 } ] },
+      { t: "Skill block", sub: "15 min · 90-120 s rest", items: [
+        { k: "hs", id: "hs", s: 5, h: 25, r: "20-30 s", rest: 105 },
+        { k: "ex", id: "lsit", m: "LSIT", s: 5, h: 10, rest: 105 },
+      ]},
+      { t: "Strength block", sub: "20 min · 60-90 s rest", items: [
+        { k: "ex", id: "plan", m: "PLAN", s: 3, h: 12, r: "10-15 s", rest: 75 },
+        { k: "ex", id: "pike", m: "M3", s: 3, r: "6-10", rest: 75 },
+        { k: "ex", id: "row", m: "M4", s: 3, r: "8-10", rest: 75 },
+        { k: "ex", id: "hollow", m: "M1", s: 3, h: 30, rest: 60 },
+        { k: "ex", id: "arch", m: "ARCH", s: 3, h: 30, rest: 60 },
+        { k: "ex", id: "pist", m: "PIST", s: 3, r: "5 / leg", rest: 75 },
+      ]},
+      { t: "Flexibility finish", sub: "7 min · 3 x 30-45 s", items: [
+        { k: "ex", id: "pikef", m: "PIKE", s: 3, h: 40, rest: 15 },
+        { k: "ex", id: "strd", m: "STRD", s: 3, h: 40, rest: 15 },
+        { k: "ex", id: "wso", m: "WSO", s: 3, h: 40, rest: 15 },
+      ]},
+    ], rules: GYMNAST_RULES },
+  thu: { name: "Mobility and recovery", focus: "Easy day", mins: 25, blocks: [{ items: [
+    W(), MOB("Daily mobility routine, the full 15 min"),
+    { k: "ex", id: "m2", m: "M2", s: 3, h: 20, rest: 45, name: "Easy chest-to-wall hold" },
+  ]}]},
+  fri: { name: "Full-body B", focus: "Pull and legs focus", mins: 45, hard: true, blocks: [{ items: [
+    W(), { k: "ex", id: "row", m: "M4", s: 4, r: "8-12", rest: 75 },
+    { k: "ex", id: "y", m: "Y", s: 3, r: "12", rest: 60 },
+    { k: "ex", id: "ssq", m: "M6", s: 3, r: "10 / leg", rest: 60, name: "Split squat" },
+    { k: "ex", id: "gb", m: "M7", s: 3, r: "15", rest: 60 },
+    { k: "ex", id: "pu", m: "M5", s: 3, r: "8-12", rest: 75 },
+    { k: "hs", id: "hs", s: 4, h: 25, r: "20-30 s", rest: 60 },
+    MOB(),
+  ]}]},
+  sat: { name: "Skills and play", focus: "Optional", mins: 30, blocks: [{ items: [
+    W(), { k: "hs", id: "hs", s: 8, h: 18, r: "15-20 s", rest: 45 },
+    { k: "ex", id: "lsit", m: "LSIT", s: 5, h: 10, rest: 60 },
+    { k: "ex", id: "plan", m: "PLAN", s: 3, h: 12, r: "10-15 s", rest: 60 },
+    MOB(),
+  ]}]},
+  sun: { name: "Rest", focus: "Recover", mins: 0, rest: true, blocks: [] },
+  hotel: { name: "Hotel room workout", focus: "No equipment, quiet", mins: 30, hotel: true,
+    intro: "Clear about 2 m by 2 m of floor, a towel under your hands or feet on carpet, and an empty wall for the handstand block.",
+    blocks: [
+      { t: "Warm-up", sub: "5 min", items: [ W() ] },
+      { t: "Circuit", sub: "3 rounds · 60-90 s rest between rounds", items: [
+        { k: "ex", id: "pu", m: "M5", s: 3, r: "10-15", note: "Put your feet on the bed once this feels easy." },
+        { k: "ex", id: "pike", m: "M3", s: 3, r: "8-10" },
+        { k: "ex", id: "y", m: "Y", s: 3, r: "12" },
+        { k: "ex", id: "ssq", m: "M6", s: 3, r: "10 / leg", name: "Split squat", note: "Hold a wall or chair lightly for balance." },
+        { k: "ex", id: "gb", m: "M7", s: 3, r: "15", note: "Move to one leg when it gets easy." },
+        { k: "ex", id: "hollow", m: "M1", s: 3, h: 30 },
+        { k: "ex", id: "plank", m: "M8", s: 3, h: 40, r: "30-45 s", rest: 75, note: "Last move of the round. Rest 60-90 s after it." },
+      ]},
+      { t: "Handstand block", sub: "5 min · 30 s rest", items: [
+        { k: "ex", id: "m2", m: "M2", s: 4, h: 25, r: "20-30 s", rest: 30, note: "Check the wall is clear of pictures and furniture first." },
+      ]},
+    ],
+    rules: [
+      "Choose slow, controlled reps over jumping moves to keep the noise down.",
+      "If the desk is solid and does not move, use it for inverted rows (M4) in place of the Y raises. Test it with partial weight first.",
+      "Progress the same way as at home: add reps until you reach the top of the range, then move to a harder variation.",
+    ] },
+  mini: { name: "10-minute version", focus: "Low-energy day", mins: 10, mini: true,
+    intro: "Showing up is the habit. This short version keeps your streak alive and counts toward your week.",
+    blocks: [{ items: [
+      W(), { k: "hs", id: "hs", s: 3, h: 20, r: "20 s", rest: 40 },
+      { k: "ex", id: "pu", m: "M5", s: 2, r: "8-12", rest: 45 },
+      { k: "ex", id: "hollow", m: "M1", s: 2, h: 30, rest: 30 },
+    ]}]},
+};
+const DAY_KEYS = ["mon","tue","wed","thu","fri","sat","sun"];
+const DAY_SHORT = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const WEEK_GOAL = 3;
+const LEVELS = ["Fresh start", "Warmed up", "Plank solid", "Pike climber", "Wall walker", "Kick-up", "Balance hunter", "Upside-down regular", "Freestanding", "Handstand legend"];
+
+// badge glyphs are simple stroked paths drawn inside a 24x24 ring
+const G = {
+  star: "M12 6.5l1.7 3.5 3.8.5-2.8 2.6.7 3.8L12 15l-3.4 1.9.7-3.8-2.8-2.6 3.8-.5z",
+  check: "M7.5 12.5l3 3 6-6.5",
+  bolt: "M13 5.5l-5 7h4l-1 6 5-7.5h-4z",
+  case: "M6 9.5h12v8H6zM9.5 9.5V7.5h5v2",
+  flip: "M12 17.5V8M12 8l-3 3M12 8l3 3M8 6.5h8",
+  flame: "M12 18c-2.8 0-4.5-1.8-4.5-4.2 0-2.6 2.2-3.8 2.7-6.3 1.6 1 2 2.6 1.8 3.8.8-.4 1.4-1.2 1.6-2.2 1.6 1.4 2.9 2.9 2.9 4.7 0 2.4-1.7 4.2-4.5 4.2z",
+  wave: "M6 13c2-3 4-3 6 0s4 3 6 0",
+  clock: "M12 7v5l3 2",
+  wall: "M7 6v12M7 9h4M7 13h4M17 18l-4-10",
+};
+const BADGES = [
+  { id: "first", name: "First workout", how: "Finish any workout", g: "check", test: (s) => s.workouts >= 1 },
+  { id: "mini", name: "Showed up anyway", how: "Finish a 10-minute version", g: "bolt", test: (s) => s.minis >= 1 },
+  { id: "week", name: "Full week", how: `${WEEK_GOAL} workouts in one week`, g: "star", test: (s) => s.bestWeek >= WEEK_GOAL },
+  { id: "five", name: "Five down", how: "5 workouts", g: "check", test: (s) => s.workouts >= 5 },
+  { id: "gym", name: "Gymnast", how: "Finish a Wednesday gymnast session", g: "flip", test: (s) => s.gyms >= 1 },
+  { id: "hotel", name: "Road warrior", how: "Finish a hotel room workout", g: "case", test: (s) => s.hotels >= 1 },
+  { id: "inv1", name: "Minute upside down", how: "60 s of handstand holds in total", g: "clock", test: (s) => s.inv >= 60 },
+  { id: "wall", name: "On the wall", how: "Reach handstand step 3", g: "wall", test: () => S.step >= 2 },
+  { id: "streak2", name: "Two-week streak", how: `${WEEK_GOAL}+ workouts two weeks running`, g: "flame", test: (s) => s.bestStreak >= 2 },
+  { id: "ten", name: "Ten down", how: "10 workouts", g: "check", test: (s) => s.workouts >= 10 },
+  { id: "bendy", name: "Bendy", how: "7 mobility routines", g: "wave", test: (s) => s.mobs >= 7 },
+  { id: "inv10", name: "Ten minutes inverted", how: "600 s of handstand holds", g: "clock", test: (s) => s.inv >= 600 },
+  { id: "streak4", name: "Month strong", how: `${WEEK_GOAL}+ workouts four weeks running`, g: "flame", test: (s) => s.bestStreak >= 4 },
+  { id: "free", name: "Freestanding", how: "Reach handstand step 5", g: "flip", test: () => S.step >= 4 },
+  { id: "habit", name: "It's a habit", how: "25 workouts", g: "star", test: (s) => s.workouts >= 25 },
+];
+
+/* ---------- state ---------- */
+const KEY = "handstand-plan-v1";
+let S = { step: 0, log: {}, at: 0, seen: [], why: "" };
+let dbRef = null, saveTimer = null, writing = false, writeAgain = false, syncText = "Saved on this phone";
+const ui = { tab: "today", dayIdx: todayIdx(), movesSeg: "moves", guide: false, skipped: new Set(), celebrated: false };
+
+function todayIdx() { return (new Date().getDay() + 6) % 7; }
+function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+function parseIso(k) { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d, 12); }
+function mondayOf(d) { const m = new Date(d); m.setHours(12, 0, 0, 0); m.setDate(m.getDate() - ((m.getDay() + 6) % 7)); return m; }
+function weekDates() {
+  const mon = mondayOf(new Date());
+  return DAY_KEYS.map((_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return d; });
+}
+function entry(dateKey, create) {
+  let e = S.log[dateKey];
+  if (!e && create) e = S.log[dateKey] = { sets: {} };
+  return e || { sets: {} };
+}
+function loadLocal() {
+  try { const j = JSON.parse(localStorage.getItem(KEY) || "null"); if (j && typeof j === "object") S = Object.assign(S, j); } catch (e) {}
+  if (!Array.isArray(S.seen)) S.seen = [];
+}
+function save() {
+  S.at = Date.now();
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(pushDb, 900);
+}
+async function pushDb() {
+  if (!dbRef) return;
+  if (writing) { writeAgain = true; return; }
+  writing = true;
+  try { await dbRef.set(JSON.parse(JSON.stringify(S))); syncText = "Saved to your account"; }
+  catch (e) { syncText = "Saved on this phone"; }
+  writing = false;
+  if (writeAgain) { writeAgain = false; pushDb(); }
+}
+async function initDb() {
+  try {
+    if (!window.claude || !window.claude.use) return;
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    dbRef = db.collection("data/users/" + id).doc("progress");
+    const snap = await dbRef.get();
+    const remote = snap.exists ? snap.data() : null;
+    if (remote && (remote.at || 0) > (S.at || 0)) {
+      S = Object.assign({ step: 0, log: {}, at: 0, seen: [], why: "" }, JSON.parse(JSON.stringify(remote)));
+      try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {}
+    } else if (S.at) {
+      await pushDb();
+    }
+    syncText = "Saved to your account";
+    render();
+  } catch (e) { /* stay on device storage */ }
+}
+
+/* ---------- helpers ---------- */
+const $ = (s, el = document) => el.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (s) => { s = Math.max(0, Math.ceil(s)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
+const PLAY = '<svg viewBox="0 0 16 16"><path d="M4 2.5v11l9-5.5z"/></svg>';
+const reduced = () => window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+let toastT;
+function toast(msg, ms = 2200) {
+  let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); }
+  t.textContent = msg; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), ms);
+}
+function popAt(el, text) {
+  if (!el || !el.getBoundingClientRect) return;
+  const r = el.getBoundingClientRect(), p = document.createElement("div");
+  p.className = "pop"; p.textContent = text;
+  p.style.left = r.left + r.width / 2 + "px"; p.style.top = r.top - 6 + "px";
+  document.body.appendChild(p); setTimeout(() => p.remove(), 1000);
+}
+function badgeSvg(g) { return `<svg viewBox="0 0 24 24" aria-hidden="true"><circle class="ring" cx="12" cy="12" r="11.5"/><path class="glyph" d="${G[g]}"/></svg>`; }
+function itemName(it) {
+  if (it.k === "hs") return "Handstand: " + HS_STEPS[S.step][0].toLowerCase();
+  return it.name || MOVES[it.m].short || MOVES[it.m].name;
+}
+function itemDose(it) {
+  if (it.k === "warm" || it.k === "mob") return "";
+  return it.s + " x " + (it.r || (it.h ? it.h + " s" : ""));
+}
+function itemCue(it) {
+  if (it.k === "hs") return HS_STEPS[S.step][1] + " Move up a step at 3 x 30 s.";
+  return MOVES[it.m].cue + (it.note ? " " + it.note : "");
+}
+function sessionOf(idx, e) {
+  const base = SESSIONS[DAY_KEYS[idx]];
+  if (base.rest) return { key: DAY_KEYS[idx], sess: base };
+  if (e.mini) return { key: "mini", sess: SESSIONS.mini };
+  if (e.hotel) return { key: "hotel", sess: SESSIONS.hotel };
+  return { key: DAY_KEYS[idx], sess: base };
+}
+function sessionFor(idx, dateKey) { return sessionOf(idx, entry(dateKey)); }
+function allItems(sess) { return sess.blocks.flatMap((b) => b.items); }
+function itemComplete(it, e) { return it.k === "warm" || it.k === "mob" ? !!e.sets[it.id] : (e.sets[it.id] || 0) >= it.s; }
+function tally(sess, e) {
+  let total = 0, done = 0;
+  for (const it of allItems(sess)) {
+    if (it.k === "warm" || it.k === "mob") { total += 1; done += e.sets[it.id] ? 1 : 0; }
+    else { total += it.s; done += Math.min(it.s, e.sets[it.id] || 0); }
+  }
+  return { total, done };
+}
+function curKey() { return iso(weekDates()[ui.dayIdx]); }
+
+/* ---------- motivation: everything derived from the log, so nothing drifts ---------- */
+const XP_SET = 10, XP_CHECK = 15, XP_FINISH = 50, XP_MINI = 30, XP_STEP = 100;
+function levelFor(xp) { const L = Math.floor(Math.sqrt(xp / 100)); return { L, from: 100 * L * L, to: 100 * (L + 1) * (L + 1), name: LEVELS[Math.min(L, LEVELS.length - 1)] }; }
+function computeStats() {
+  const s = { xp: S.step * XP_STEP, workouts: 0, minis: 0, hotels: 0, gyms: 0, mobs: 0, sets: 0, inv: 0, weeks: {}, bestWeek: 0, streak: 0, bestStreak: 0 };
+  for (const [k, e] of Object.entries(S.log || {})) {
+    if (!e || !e.sets) continue;
+    const d = parseIso(k), idx = (d.getDay() + 6) % 7;
+    const { sess } = sessionOf(idx, e);
+    for (const it of allItems(sess)) {
+      if (it.k === "warm" || it.k === "mob") { if (e.sets[it.id]) { s.xp += XP_CHECK; if (it.k === "mob") s.mobs++; } }
+      else {
+        const n = Math.min(it.s, e.sets[it.id] || 0);
+        s.xp += n * XP_SET; s.sets += n;
+        if (it.k === "hs" || it.m === "M2") s.inv += n * it.h;
+      }
+    }
+    if (e.done) {
+      s.workouts++; s.xp += e.mini ? XP_MINI : XP_FINISH;
+      if (e.mini) s.minis++; else if (e.hotel) s.hotels++; else if (sess.gym) s.gyms++;
+      const wk = iso(mondayOf(d)); s.weeks[wk] = (s.weeks[wk] || 0) + 1;
+    }
+  }
+  s.bestWeek = Math.max(0, ...Object.values(s.weeks));
+  // streak = weeks in a row hitting the goal; this week still counts as "in progress", so it never breaks early
+  const thisMon = mondayOf(new Date());
+  let w = new Date(thisMon), run = 0;
+  if ((s.weeks[iso(w)] || 0) < WEEK_GOAL) w.setDate(w.getDate() - 7);
+  while ((s.weeks[iso(w)] || 0) >= WEEK_GOAL) { run++; w.setDate(w.getDate() - 7); }
+  s.streak = run;
+  const keys = Object.keys(s.weeks).sort();
+  let best = 0, cur = 0, prev = null;
+  for (const k of keys) {
+    if (s.weeks[k] >= WEEK_GOAL) { const p = parseIso(k); cur = prev && (p - prev) / 864e5 < 8 ? cur + 1 : 1; prev = p; best = Math.max(best, cur); }
+    else { cur = 0; prev = null; }
+  }
+  s.bestStreak = Math.max(best, run);
+  s.thisWeek = s.weeks[iso(thisMon)] || 0;
+  s.level = levelFor(s.xp);
+  return s;
+}
+// Run a change, then celebrate whatever it unlocked.
+function change(fn, opts = {}) {
+  const before = computeStats();
+  fn();
+  const after = computeStats();
+  const newBadges = BADGES.filter((b) => b.test(after) && !S.seen.includes(b.id));
+  newBadges.forEach((b) => S.seen.push(b.id));
+  save();
+  render();
+  const gained = after.xp - before.xp;
+  if (gained > 0 && opts.el) popAt(opts.el, "+" + gained + " XP");
+  if (after.level.L > before.level.L) { celebrate(); chime(); toast("Level " + (after.level.L + 1) + ": " + after.level.name + "!", 3000); }
+  else if (newBadges.length) { celebrate(true); chime(); toast("Badge unlocked: " + newBadges.map((b) => b.name).join(", "), 3000); }
+  else if (before.thisWeek < WEEK_GOAL && after.thisWeek >= WEEK_GOAL) { celebrate(); chime(); toast("Weekly goal hit. That's a win.", 3000); }
+  return after;
+}
+function nudge(st, e, isToday, sess) {
+  if (e.done) return e.mini ? "Mini session logged. You kept the chain going." : "Done for today. Nice work, rest up.";
+  const dates = weekDates(), t = todayIdx();
+  if (isToday && t > 0) {
+    const y = entry(iso(dates[t - 1]));
+    if (SESSIONS[DAY_KEYS[t - 1]].hard && !y.done) return "Missed yesterday? No problem. The rule is never miss twice, so today counts double.";
+  }
+  const { done } = tally(sess, e);
+  if (done > 0) return "You've already started. Just do the next set.";
+  const left = WEEK_GOAL - st.thisWeek;
+  const lines = [
+    "Starting is the hard part. Tap Start and the app tells you each step.",
+    "You don't have to feel like it. Do the warm-up, then decide.",
+    "The best workout is the one you start. The first two minutes are the hardest.",
+    left > 0 ? `${left} more workout${left > 1 ? "s" : ""} and this week is a win.` : "Weekly goal done. Everything now is a bonus.",
+  ];
+  const day = new Date().getDate();
+  return lines[day % lines.length];
+}
+
+/* ---------- celebration ---------- */
+let confettiBusy = false;
+function celebrate(small) {
+  if (reduced() || confettiBusy) return;
+  confettiBusy = true;
+  const c = $("#confetti"), ctx = c.getContext("2d");
+  const cs = getComputedStyle(document.documentElement);
+  const cols = ["--accent", "--gold", "--warm"].map((v) => cs.getPropertyValue(v).trim() || "#0A7563");
+  c.hidden = false; c.width = innerWidth * devicePixelRatio; c.height = innerHeight * devicePixelRatio;
+  ctx.scale(devicePixelRatio, devicePixelRatio);
+  const N = small ? 60 : 140, parts = [];
+  for (let i = 0; i < N; i++) parts.push({ x: innerWidth / 2 + (Math.random() - .5) * 80, y: innerHeight * .35, vx: (Math.random() - .5) * 11, vy: -Math.random() * 12 - 4, r: Math.random() * 6.28, vr: (Math.random() - .5) * .4, w: 6 + Math.random() * 6, c: cols[i % 3] });
+  const t0 = performance.now();
+  (function frame(t) {
+    ctx.clearRect(0, 0, innerWidth, innerHeight);
+    for (const p of parts) { p.vy += .35; p.x += p.vx; p.y += p.vy; p.r += p.vr; ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.r); ctx.fillStyle = p.c; ctx.fillRect(-p.w / 2, -3, p.w, 6); ctx.restore(); }
+    if (t - t0 < 1800) requestAnimationFrame(frame); else { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height); c.hidden = true; confettiBusy = false; }
+  })(t0);
+}
+
+/* ---------- render ---------- */
+function render() {
+  const st = computeStats();
+  document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-current", b.dataset.tab === ui.tab ? "page" : "false"));
+  $("#days").hidden = ui.tab !== "today";
+  const lv = st.level, pct = Math.round(((st.xp - lv.from) / (lv.to - lv.from)) * 100);
+  $("#xp").innerHTML = `<span class="lv">LV<b>${lv.L + 1}</b></span><span class="xpname">${esc(lv.name)}<span>${st.thisWeek}/${WEEK_GOAL} wk</span></span><span class="xpbar"><span style="width:${pct}%"></span></span>`;
+  renderDays();
+  const main = $("#main");
+  if (ui.tab === "today") main.innerHTML = viewToday(st);
+  else if (ui.tab === "timer") main.innerHTML = viewTimer();
+  else if (ui.tab === "moves") main.innerHTML = viewMoves();
+  else if (ui.tab === "handstand") main.innerHTML = viewHandstand();
+  else main.innerHTML = viewWins(st);
+  if (ui.guide) renderGuide();
+}
+function renderDays() {
+  const dates = weekDates(), t = todayIdx();
+  $("#days").innerHTML = dates.map((d, i) => {
+    const e = entry(iso(d));
+    const cls = ["day", i === t ? "today" : "", e.done ? "done" : "", SESSIONS[DAY_KEYS[i]].hard ? "hard" : ""].join(" ");
+    return `<button class="${cls}" data-day="${i}" aria-pressed="${i === ui.dayIdx}" aria-label="${DAY_SHORT[i]} ${d.getDate()}${e.done ? ', done' : ''}"><b>${DAY_SHORT[i]}</b><small>${d.getDate()}</small><i></i></button>`;
+  }).join("");
+}
+function viewToday(st) {
+  const dates = weekDates(), d = dates[ui.dayIdx], dk = iso(d);
+  const e = entry(dk);
+  const { key, sess } = sessionFor(ui.dayIdx, dk);
+  const base = SESSIONS[DAY_KEYS[ui.dayIdx]];
+  const isToday = ui.dayIdx === todayIdx();
+  const when = isToday ? "Today" : d.toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "short" });
+  const why = S.why ? `<p class="why"><b>Why I'm doing this:</b> ${esc(S.why)}</p>` : "";
+
+  if (sess.rest) {
+    return `<section class="view">
+      <div class="card rest-day"><div class="eyebrow">${esc(when)}</div><div class="big">Rest day</div>
+      <p class="lede">Muscles grow on rest days. Optional 10 minutes of easy mobility.</p>
+      <div class="progress-row" style="justify-content:center">${st.thisWeek} of ${WEEK_GOAL} workouts this week${st.streak ? " · " + st.streak + "-week streak" : ""}</div>${why}</div>
+      ${itemHtml({ k: "mob", id: "mob", label: "Easy mobility (optional)" }, e)}
+      ${installCard()}
+    </section>`;
+  }
+  const { total, done } = tally(sess, e);
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const startLabel = e.done ? "Done ✓ Open it again" : done > 0 ? "Keep going" : "Start workout";
+  const variants = [];
+  if (!e.mini) variants.push(`<button class="btn soft" data-act="mini">Low energy? Do the 10-minute version</button>`);
+  else variants.push(`<button class="btn ghost" data-act="mini">Back to the full ${esc(base.name)} session</button>`);
+  if (!e.mini) variants.push(`<button class="btn ghost" data-act="hotel">${e.hotel ? "Back to the " + esc(base.name) + " session" : "Travelling? Swap for the hotel room workout"}</button>`);
+
+  return `<section class="view">
+    <div class="card">
+      <div class="session-head">
+        <div class="eyebrow">${esc(when)}${key === "hotel" || key === "mini" ? " · swapped" : ""}</div>
+        <h2>${esc(sess.name)}</h2>
+        <div class="meta"><span class="chip">${esc(sess.focus)}</span><span class="chip warm">${sess.mins} min</span>${base.hard && !e.mini ? '<span class="chip">Hard day</span>' : ""}${st.streak ? `<span class="chip gold">${st.streak}-week streak</span>` : ""}</div>
+      </div>
+      <p class="nudge">${esc(nudge(st, e, isToday, sess))}</p>
+      ${why}
+      <button class="btn big" data-act="guide">${PLAY}${startLabel}</button>
+      <div class="bar" aria-hidden="true"><span style="width:${pct}%"></span></div>
+      <div class="progress-row"><span>${done} of ${total} sets</span><span>${st.thisWeek} of ${WEEK_GOAL} workouts this week</span></div>
+    </div>
+    ${variants.join("")}
+    ${sess.intro ? `<p class="note">${esc(sess.intro)}</p>` : ""}
+    ${sess.blocks.map((b) => `<div class="block">
+      ${b.t ? `<div class="block-title"><h3>${esc(b.t)}</h3><span>${esc(b.sub || "")}</span></div>` : ""}
+      ${b.items.map((it) => itemHtml(it, e)).join("")}
+    </div>`).join("")}
+    ${sess.rules ? `<div class="card"><div class="eyebrow">${sess.hotel ? "Hotel tips" : "Gymnast rules"}</div><ul class="rules">${sess.rules.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>` : ""}
+    <button class="btn" data-act="finish">${e.done ? "Logged ✓ (tap to undo)" : "Finish and log this workout"}</button>
+    ${installCard()}
+  </section>`;
+}
+function itemHtml(it, e) {
+  if (it.k === "warm") {
+    const on = !!e.sets.warm;
+    return `<div class="ex ${on ? "complete" : ""}">
+      <div class="ex-top"><div class="ex-name">Warm-up <span class="code">W1-W8</span></div><div class="ex-dose">5-8 min</div></div>
+      <details class="cue"><summary>Show the 8 moves</summary><ol>${WARMUP.map((w) => `<li><b>${w[1]}.</b> ${esc(w[2])}</li>`).join("")}</ol>
+      ${it.extra ? `<p>Handstand-only day: add the wall shoulder opener, 3 x 20 s.</p>` : ""}</details>
+      <div class="ex-bottom"><button class="check ${on ? "on" : ""}" data-check="warm">${on ? "✓ Warmed up" : "Mark warm-up done"}</button></div>
+    </div>`;
+  }
+  if (it.k === "mob") {
+    const on = !!e.sets.mob;
+    return `<div class="ex ${on ? "complete" : ""}">
+      <div class="ex-top"><div class="ex-name">${esc(it.label || "Daily mobility routine")}</div><div class="ex-dose">12-15 min</div></div>
+      <details class="cue"><summary>Show the routine</summary><ul>${MOBILITY.map((m) => `<li><b>${esc(m[0])}:</b> ${esc(m[2])}</li>`).join("")}</ul></details>
+      <div class="ex-bottom"><button class="check ${on ? "on" : ""}" data-check="mob">${on ? "✓ Done" : "Mark done"}</button></div>
+    </div>`;
+  }
+  const n = e.sets[it.id] || 0;
+  const name = itemName(it);
+  const code = it.k === "hs" ? (HS_STEPS[S.step][2] || "") : (CORE_CODES.includes(it.m) ? it.m : "");
+  const pips = Array.from({ length: it.s }, (_, i) => `<button class="pip ${i < n ? "on" : ""}" data-pip="${it.id}" data-i="${i}" aria-label="Set ${i + 1}${i < n ? ' done' : ''}">${i + 1}</button>`).join("");
+  const go = it.h
+    ? `<button class="go" data-hold="${it.id}">${PLAY}Start ${it.h} s</button>`
+    : (it.rest ? `<button class="go" data-rest="${it.rest}" data-label="${esc(name)}">${PLAY}Rest ${it.rest} s</button>` : "");
+  return `<div class="ex ${n >= it.s ? "complete" : ""}">
+    <div class="ex-top"><div class="ex-name">${esc(name)}${code ? `<span class="code">${code}</span>` : ""}</div><div class="ex-dose">${esc(itemDose(it))}</div></div>
+    <details class="cue"><summary>Form</summary><p>${esc(itemCue(it))}</p></details>
+    <div class="ex-bottom"><div class="pips">${pips}</div>${go}</div>
+  </div>`;
+}
+function installCard() {
+  return `<details class="card install"><summary class="eyebrow" style="cursor:pointer">Put this app on your home screen</summary>
+    <ol><li><b>iPhone (Safari):</b> tap Share, then Add to Home Screen.</li>
+    <li><b>Android (Chrome):</b> tap the ⋮ menu, then Add to Home screen.</li>
+    <li>Tip: set a daily phone alarm called "Handstand Plan" for the same time each day. A fixed time beats remembering.</li></ol></details>`;
+}
+function viewTimer() {
+  const presets = [[30, "Rest"], [60, "Rest"], [90, "Rest"], [120, "Rest"], [20, "Hold"], [30, "Hold"], [45, "Hold"], [60, "Hold"]];
+  return `<section class="view">
+    <div class="card">
+      <div class="eyebrow">Interval timer</div>
+      <div class="clock-big" id="bigClock">${T.phase ? fmt(T.remain()) : "0:00"}</div>
+      <p class="lede" style="text-align:center" id="bigLabel">${T.phase ? esc(T.label) : "Pick a rest or hold below. Holds start with a 5 s countdown so you can kick up."}</p>
+    </div>
+    <div class="block"><div class="block-title"><h3>Rest</h3><span>between sets</span></div>
+      <div class="presets">${presets.slice(0, 4).map(([s, k]) => `<button class="preset" data-preset="${s}" data-kind="rest"><b>${fmt(s)}</b><small>${k}</small></button>`).join("")}</div></div>
+    <div class="block"><div class="block-title"><h3>Hold</h3><span>handstand, hollow, plank</span></div>
+      <div class="presets">${presets.slice(4).map(([s, k]) => `<button class="preset" data-preset="${s}" data-kind="hold"><b>${s} s</b><small>${k}</small></button>`).join("")}</div></div>
+    <p class="note">The phone beeps for the last 3 seconds and at the end. Keep the sound on.</p>
+  </section>`;
+}
+function viewMoves() {
+  const seg = ui.movesSeg;
+  let body = "";
+  if (seg === "moves") {
+    body = `<div class="card"><div class="eyebrow">Movement reference</div><div class="list">
+      ${CORE_CODES.map((c) => `<div class="li"><div class="tag">${c}</div><div><b>${esc(MOVES[c].name)}</b><p>${esc(MOVES[c].cue)}</p></div></div>`).join("")}
+    </div></div>
+    <div class="card"><div class="eyebrow">Extra moves</div><div class="list">
+      ${EXTRA_CODES.map((c) => `<div class="li"><div class="tag">+</div><div><b>${esc(MOVES[c].name)}</b><p>${esc(MOVES[c].cue)}</p></div></div>`).join("")}
+    </div></div>`;
+  } else if (seg === "warm") {
+    body = `<div class="card"><div class="eyebrow">Warm-up routine · 5-8 min</div>
+      <p class="lede">Do these in order before every full-body session and before handstand practice. Wrists and shoulders matter most, so do not skip W1-W4.</p>
+      <div class="list">${WARMUP.map((w) => `<div class="li"><div class="tag">${w[0]}</div><div><b>${esc(w[1])}</b><p>${esc(w[2])}</p></div></div>`).join("")}</div>
+      <p class="note">Handstand-only days: add a wall shoulder opener, 3 x 20 s.</p></div>`;
+  } else {
+    body = `<div class="card"><div class="eyebrow">Daily mobility · 12-15 min</div>
+      <p class="lede">Every day, rest days included, when your muscles are warm.</p>
+      <div class="list">${MOBILITY.map((m, i) => `<div class="li"><div class="tag">${i + 1}</div><div><b>${esc(m[0])}</b><p>${esc(m[1])} ${esc(m[2])}.</p></div></div>`).join("")}</div></div>
+      <div class="card"><div class="eyebrow">Rules</div><ul class="rules">${MOBILITY_RULES.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>`;
+  }
+  return `<section class="view">
+    <div class="seg" role="group" aria-label="Reference">
+      <button data-seg="moves" aria-pressed="${seg === "moves"}">Moves</button>
+      <button data-seg="warm" aria-pressed="${seg === "warm"}">Warm-up</button>
+      <button data-seg="mob" aria-pressed="${seg === "mob"}">Mobility</button>
+    </div>${body}</section>`;
+}
+function viewHandstand() {
+  return `<section class="view">
+    <div class="card">
+      <div class="eyebrow">Your handstand step</div>
+      <h2 style="font-size:28px;font-stretch:78%;text-transform:uppercase;line-height:1.05">Step ${S.step + 1}: ${esc(HS_STEPS[S.step][0])}</h2>
+      <p class="lede">Move to the next step when you can hold the current one for 3 x 30 seconds. Expect a 30-60 second wall hold in 1-2 months and a freestanding handstand after several months of regular practice.</p>
+      <div class="row"><button class="btn ghost" data-act="stepdown" ${S.step === 0 ? "disabled" : ""}>Back a step</button><button class="btn" data-act="stepup" ${S.step === 4 ? "disabled" : ""}>I hit 3 x 30 s, move up (+${XP_STEP} XP)</button></div>
+    </div>
+    <div class="steps">${HS_STEPS.map((s, i) => `<button class="step ${i < S.step ? "past" : ""} ${i === S.step ? "cur" : ""}" data-step="${i}" aria-pressed="${i === S.step}">
+      <div class="n">${i + 1}</div><div>${i === S.step ? '<div class="you">You are here</div>' : ""}<b>${esc(s[0])}</b><span>${esc(s[1])}</span></div></button>`).join("")}</div>
+    <div class="card"><div class="eyebrow">Progression rules</div><ul class="rules">${PROGRESSION_RULES.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>
+  </section>`;
+}
+function viewWins(st) {
+  const lv = st.level, pct = Math.round(((st.xp - lv.from) / (lv.to - lv.from)) * 100);
+  const nextName = LEVELS[Math.min(lv.L + 1, LEVELS.length - 1)];
+  const got = BADGES.filter((b) => b.test(st)).length;
+  const dots = Array.from({ length: WEEK_GOAL }, (_, i) => `<i class="${i < st.thisWeek ? "on" : ""}"></i>`).join("");
+  const invTxt = st.inv >= 60 ? (st.inv / 60).toFixed(st.inv >= 600 ? 0 : 1) : st.inv;
+  return `<section class="view">
+    <div class="card lvl-card">
+      <div class="lvl-num"><small>Level</small><b>${lv.L + 1}</b></div>
+      <h2>${esc(lv.name)}</h2>
+      <div class="xpbar" style="height:10px"><span style="width:${pct}%"></span></div>
+      <div class="progress-row"><span>${st.xp} XP</span><span>${lv.to - st.xp} XP to ${esc(nextName)}</span></div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">This week</div>
+      <div class="weekdots" aria-label="${st.thisWeek} of ${WEEK_GOAL} workouts">${dots}</div>
+      <p class="lede">${st.thisWeek >= WEEK_GOAL ? "Goal hit. Anything more is a bonus." : `${WEEK_GOAL - st.thisWeek} more workout${WEEK_GOAL - st.thisWeek > 1 ? "s" : ""} to win the week. Any workout counts, including the 10-minute version.`}</p>
+      <p class="note">Streaks count weeks, not days, so one missed day never breaks them. Current streak: <b>${st.streak} week${st.streak === 1 ? "" : "s"}</b>. Best: ${st.bestStreak}.</p>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${st.workouts}</b><small>workouts</small></div>
+      <div class="stat"><b>${st.sets}</b><small>sets done</small></div>
+      <div class="stat"><b>${invTxt}</b><small>${st.inv >= 60 ? "min" : "s"} upside down</small></div>
+    </div>
+    <div class="card">
+      <div class="eyebrow">Why I'm doing this</div>
+      <p class="note">Write one line for future you. It shows on the Today screen.</p>
+      <textarea id="why" maxlength="160" placeholder="e.g. Hold a handstand on the beach this summer">${esc(S.why || "")}</textarea>
+    </div>
+    <div class="block"><div class="block-title"><h3>Badges</h3><span>${got} of ${BADGES.length}</span></div>
+      <div class="badges">${BADGES.map((b) => { const has = b.test(st); return `<div class="badge ${has ? "got" : ""}">${badgeSvg(b.g)}<b>${esc(b.name)}</b><small>${esc(b.how)}</small></div>`; }).join("")}</div>
+    </div>
+    <div class="card"><div class="eyebrow">How you earn XP</div>
+      <ul class="rules"><li>Every set: +${XP_SET}</li><li>Warm-up or mobility: +${XP_CHECK}</li><li>Log a workout: +${XP_FINISH} (10-minute version: +${XP_MINI})</li><li>Move up a handstand step: +${XP_STEP}</li></ul>
+      <p class="note">${esc(syncText)}.</p></div>
+  </section>`;
+}
+
+/* ---------- guided workout: one thing at a time ---------- */
+function guideState() {
+  const dk = curKey(), e = entry(dk), { sess } = sessionFor(ui.dayIdx, dk);
+  const items = allItems(sess);
+  const cur = items.find((it) => !itemComplete(it, e) && !ui.skipped.has(it.id));
+  return { dk, e, sess, items, cur };
+}
+function openGuide() { ui.guide = true; ui.skipped = new Set(); ui.celebrated = false; document.body.classList.add("guiding"); $("#guide").hidden = false; renderGuide(); $("#guide").scrollTop = 0; }
+function closeGuide() { ui.guide = false; document.body.classList.remove("guiding"); $("#guide").hidden = true; render(); }
+function renderGuide() {
+  const { dk, e, sess, items, cur } = guideState();
+  const steps = items.map((it) => `<i class="${itemComplete(it, e) ? "on" : it === cur ? "cur" : ""}"></i>`).join("");
+  const top = `<div class="g-top"><button class="g-close" data-g="close">Close</button><div class="g-steps" aria-hidden="true">${steps}</div></div>`;
+  let body, acts;
+  if (!cur) {
+    if (!e.done && !ui.celebrated) {
+      ui.celebrated = true;
+      setTimeout(() => { change(() => { entry(dk, true).done = true; }); celebrate(); chime(); }, 50);
+      return;
+    }
+    const st = computeStats();
+    body = `<div class="g-body g-done">${badgeSvg("star").replace('viewBox="0 0 24 24"', 'viewBox="0 0 24 24" class="trophy"')}
+      <div class="eyebrow">Workout logged</div><h2>You did it</h2>
+      <div class="g-xp">${st.xp} XP</div>
+      <p class="g-cue">${st.thisWeek >= WEEK_GOAL ? "Weekly goal done. Everything else this week is a bonus." : `${st.thisWeek} of ${WEEK_GOAL} this week. ${WEEK_GOAL - st.thisWeek} to go.`}</p></div>`;
+    acts = `<div class="g-acts"><button class="btn big" data-g="close">Finish</button><button class="g-link" data-g="wins">See my wins</button></div>`;
+  } else {
+    const idx = items.indexOf(cur) + 1;
+    const head = `<div class="eyebrow">${idx} of ${items.length}</div>`;
+    if (cur.k === "warm" || cur.k === "mob") {
+      const list = cur.k === "warm" ? WARMUP.map((w) => `<li><b>${w[1]}.</b> ${esc(w[2])}</li>`).join("") : MOBILITY.map((m) => `<li><b>${esc(m[0])}:</b> ${esc(m[2])}</li>`).join("");
+      body = `<div class="g-body">${head}<h2>${cur.k === "warm" ? "Warm-up" : "Mobility"}</h2>
+        <div class="g-set">${cur.k === "warm" ? "5-8 min" : "12-15 min"} <span>· go down the list</span></div>
+        <${cur.k === "warm" ? "ol" : "ul"} class="g-list">${list}</${cur.k === "warm" ? "ol" : "ul"}></div>`;
+      acts = `<div class="g-acts"><button class="btn big" data-g="check" data-id="${cur.id}">Done</button><button class="g-link" data-g="skip" data-id="${cur.id}">Skip this one</button></div>`;
+    } else {
+      const n = e.sets[cur.id] || 0;
+      const timing = T.phase ? `<div class="g-phase ${T.phase}" id="gPhase">${T.phase === "ready" ? "Get ready" : T.phase === "hold" ? "Hold it" : "Rest"}</div><div class="g-clock" id="gClock">${fmt(T.remain())}</div>` : "";
+      body = `<div class="g-body">${head}<h2>${esc(itemName(cur))}</h2>
+        <div class="g-set">Set ${n + 1} of ${cur.s} <span>· ${esc(cur.r || cur.h + " s")}${cur.r && !cur.h ? " reps" : ""}</span></div>
+        ${timing || `<p class="g-cue">${esc(itemCue(cur))}</p>`}</div>`;
+      if (T.phase) acts = `<div class="g-acts"><button class="btn big" data-g="tskip">${T.phase === "rest" ? "Skip rest" : T.phase === "ready" ? "Start now" : "Done early"}</button><button class="g-link" data-g="tplus">+15 s</button></div>`;
+      else if (cur.h) acts = `<div class="g-acts"><button class="btn big" data-g="hold" data-id="${cur.id}">${PLAY}Start ${cur.h} s hold</button><button class="g-link" data-g="skip" data-id="${cur.id}">Skip this exercise</button></div>`;
+      else acts = `<div class="g-acts"><button class="btn big" data-g="set" data-id="${cur.id}">Done set ${n + 1}</button><button class="g-link" data-g="skip" data-id="${cur.id}">Skip this exercise</button></div>`;
+    }
+  }
+  $("#guideIn").innerHTML = top + body + acts;
+}
+
+/* ---------- timer ---------- */
+let audioCtx = null, wakeLock = null;
+function unlockAudio() {
+  try { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === "suspended") audioCtx.resume(); } catch (e) {}
+}
+function beep(freq = 880, dur = 0.12, delay = 0) {
+  try {
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime + delay;
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = freq; o.type = "sine";
+    g.gain.setValueAtTime(0.0001, t0);
+    g.gain.exponentialRampToValueAtTime(0.35, t0 + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+    o.connect(g).connect(audioCtx.destination); o.start(t0); o.stop(t0 + dur + 0.02);
+  } catch (e) {}
+}
+function chime() { beep(784, .14, 0); beep(988, .14, .1); beep(1175, .14, .2); beep(1568, .3, .3); }
+function buzz(p) { try { navigator.vibrate && navigator.vibrate(p); } catch (e) {} }
+async function keepAwake(on) {
+  try {
+    if (on && !wakeLock && navigator.wakeLock) { wakeLock = await navigator.wakeLock.request("screen"); wakeLock.addEventListener("release", () => (wakeLock = null)); }
+    if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (e) { wakeLock = null; }
+}
+const T = {
+  queue: [], phase: null, label: "", total: 0, end: 0, pausedLeft: null, lastBeep: null, iv: null, cur: null,
+  remain() { return this.pausedLeft != null ? this.pausedLeft : (this.end - Date.now()) / 1000; },
+};
+function runSteps(steps) {
+  unlockAudio();
+  T.queue = steps.slice(); nextStep();
+  if (!T.iv) T.iv = setInterval(tick, 200);
+  keepAwake(true);
+}
+function nextStep() {
+  const st = T.queue.shift();
+  if (!st) return stopTimer(true);
+  T.cur = st; T.phase = st.phase; T.label = st.label; T.total = st.secs; T.end = Date.now() + st.secs * 1000; T.pausedLeft = null; T.lastBeep = null;
+  if (st.phase === "hold") { beep(1320, 0.2); buzz(80); }
+  document.body.classList.add("timing"); $("#dock").hidden = false; paintDock();
+  if (ui.guide) renderGuide();
+}
+function tick() {
+  if (!T.phase || T.pausedLeft != null) return;
+  const left = T.remain();
+  const whole = Math.ceil(left);
+  if (whole <= 3 && whole >= 1 && T.lastBeep !== whole) { T.lastBeep = whole; beep(880, 0.1); }
+  if (left <= 0) {
+    beep(T.phase === "hold" ? 660 : 1320, 0.45); buzz([120, 60, 120]);
+    const done = T.cur; T.cur = null; if (done && done.onEnd) done.onEnd();
+    nextStep(); return;
+  }
+  paintDock();
+}
+function paintDock() {
+  if (!T.phase) return;
+  const left = T.remain();
+  $("#dPhase").textContent = T.phase === "ready" ? "Get ready" : T.phase === "hold" ? "Hold" : "Rest";
+  $("#dPhase").className = "phase " + T.phase;
+  $("#dTime").textContent = fmt(left);
+  $("#dLabel").textContent = T.label;
+  $("#dBar").className = "dbar " + T.phase;
+  $("#dFill").style.width = Math.min(100, (1 - left / T.total) * 100) + "%";
+  $("#dPause").textContent = T.pausedLeft != null ? "Resume" : "Pause";
+  const big = $("#bigClock"); if (big) { big.textContent = fmt(left); $("#bigLabel").textContent = (T.phase === "ready" ? "Get ready: " : T.phase === "hold" ? "Hold: " : "Rest: ") + T.label; }
+  const gc = $("#gClock"); if (gc) gc.textContent = fmt(left);
+}
+function stopTimer(finished) {
+  T.queue = []; T.phase = null; T.cur = null; clearInterval(T.iv); T.iv = null;
+  $("#dock").hidden = true; document.body.classList.remove("timing"); keepAwake(false);
+  const big = $("#bigClock"); if (big) { big.textContent = "0:00"; $("#bigLabel").textContent = finished ? "Done. Pick the next one." : "Stopped."; }
+  if (ui.guide) renderGuide();
+}
+function holdSteps(it, dk) {
+  const name = itemName(it);
+  const steps = [
+    { phase: "ready", label: name, secs: 5 },
+    { phase: "hold", label: name, secs: it.h, onEnd: () => bumpSet(dk, it) },
+  ];
+  const n = (entry(dk).sets[it.id] || 0) + 1;
+  if (n < it.s && it.rest) steps.push({ phase: "rest", label: "Next: " + name + " set " + (n + 1), secs: it.rest });
+  return steps;
+}
+function bumpSet(dk, it) {
+  change(() => { const e = entry(dk, true); e.sets[it.id] = Math.min(it.s, (e.sets[it.id] || 0) + 1); }, { el: ui.guide ? $("#gClock") : $("#dTime") });
+}
+function restAfter(it, dk) {
+  const n = entry(dk).sets[it.id] || 0;
+  if (!it.h && it.rest && n < it.s) runSteps([{ phase: "rest", label: "Next: " + itemName(it) + " set " + (n + 1), secs: it.rest }]);
+}
+
+/* ---------- events ---------- */
+function findItem(id) {
+  const dk = curKey();
+  const { sess } = sessionFor(ui.dayIdx, dk);
+  return { it: allItems(sess).find((x) => x.id === id), dk, sess };
+}
+document.addEventListener("input", (ev) => {
+  if (ev.target.id === "why") { S.why = ev.target.value.slice(0, 160); save(); }
+});
+document.addEventListener("click", (ev) => {
+  const t = ev.target.closest("button"); if (!t) return;
+  unlockAudio();
+  const g = t.dataset.g;
+  if (g) {
+    const { it, dk } = t.dataset.id ? findItem(t.dataset.id) : {};
+    if (g === "close") { closeGuide(); return; }
+    if (g === "wins") { closeGuide(); ui.tab = "wins"; render(); window.scrollTo(0, 0); return; }
+    if (g === "check" && it) { change(() => { entry(dk, true).sets[it.id] = 1; }, { el: t }); return; }
+    if (g === "skip" && it) { ui.skipped.add(it.id); renderGuide(); return; }
+    if (g === "set" && it) { change(() => { const e = entry(dk, true); e.sets[it.id] = Math.min(it.s, (e.sets[it.id] || 0) + 1); }, { el: t }); restAfter(it, dk); return; }
+    if (g === "hold" && it) { runSteps(holdSteps(it, dk)); return; }
+    if (g === "tskip") { const c = T.cur; T.cur = null; if (c && c.phase === "hold" && c.onEnd) c.onEnd(); nextStep(); return; }
+    if (g === "tplus") { if (T.pausedLeft != null) T.pausedLeft += 15; else T.end += 15000; T.total += 15; paintDock(); return; }
+    return;
+  }
+  if (t.dataset.tab) { ui.tab = t.dataset.tab; try { history.replaceState(null, "", "#" + ui.tab); } catch (e) {} render(); window.scrollTo(0, 0); return; }
+  if (t.dataset.day) { ui.dayIdx = +t.dataset.day; render(); return; }
+  if (t.dataset.seg) { ui.movesSeg = t.dataset.seg; render(); return; }
+  if (t.dataset.pip) {
+    const { it, dk } = findItem(t.dataset.pip); if (!it) return;
+    const i = +t.dataset.i, cur = entry(dk).sets[it.id] || 0, next = cur === i + 1 ? i : i + 1;
+    const r = t.getBoundingClientRect(), anchor = { getBoundingClientRect: () => r };
+    change(() => { entry(dk, true).sets[it.id] = next; }, { el: anchor });
+    if (next > cur) restAfter(it, dk);
+    return;
+  }
+  if (t.dataset.check) { const dk = curKey(), id = t.dataset.check; const r = t.getBoundingClientRect(); change(() => { const e = entry(dk, true); e.sets[id] = e.sets[id] ? 0 : 1; }, { el: { getBoundingClientRect: () => r } }); return; }
+  if (t.dataset.hold) { const { it, dk } = findItem(t.dataset.hold); if (!it) return; if ((entry(dk).sets[it.id] || 0) >= it.s) { toast("All sets of this one are done"); return; } runSteps(holdSteps(it, dk)); return; }
+  if (t.dataset.rest) { runSteps([{ phase: "rest", label: t.dataset.label, secs: +t.dataset.rest }]); return; }
+  if (t.dataset.preset) {
+    const s = +t.dataset.preset;
+    runSteps(t.dataset.kind === "hold" ? [{ phase: "ready", label: s + " s hold", secs: 5 }, { phase: "hold", label: s + " s hold", secs: s }] : [{ phase: "rest", label: s + " s rest", secs: s }]);
+    return;
+  }
+  if (t.dataset.step) { const v = +t.dataset.step; change(() => { S.step = v; }); toast("Handstand step " + (v + 1)); return; }
+  const act = t.dataset.act;
+  if (act === "guide") { openGuide(); return; }
+  if (act === "stepup" && S.step < 4) { const r = t.getBoundingClientRect(); change(() => { S.step++; }, { el: { getBoundingClientRect: () => r } }); toast("Moved up to step " + (S.step + 1) + ". Huge."); }
+  if (act === "stepdown" && S.step > 0) { change(() => { S.step--; }); }
+  if (act === "finish") { const dk = curKey(); const r = t.getBoundingClientRect(); const wasDone = entry(dk).done; change(() => { const e = entry(dk, true); e.done = !e.done; }, { el: { getBoundingClientRect: () => r } }); if (!wasDone) { celebrate(true); toast("Workout logged"); } }
+  if (act === "hotel") { const dk = curKey(); change(() => { const e = entry(dk, true); e.hotel = !e.hotel; }); }
+  if (act === "mini") { const dk = curKey(); change(() => { const e = entry(dk, true); e.mini = !e.mini; }); window.scrollTo(0, 0); }
+  if (t.id === "dPause") { if (T.pausedLeft != null) { T.end = Date.now() + T.pausedLeft * 1000; T.pausedLeft = null; } else { T.pausedLeft = T.remain(); } paintDock(); }
+  if (t.id === "dPlus") { if (T.pausedLeft != null) T.pausedLeft += 15; else T.end += 15000; T.total += 15; paintDock(); }
+  if (t.id === "dSkip") { const c = T.cur; T.cur = null; if (c && c.phase === "hold" && c.onEnd) c.onEnd(); nextStep(); }
+  if (t.id === "dStop") stopTimer(false);
+});
+document.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && ui.guide) closeGuide(); });
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && T.phase) keepAwake(true); });
+
+/* ---------- boot ---------- */
+loadLocal();
+// badges already earned before this version shouldn't all pop at once
+(function () { const st = computeStats(); BADGES.forEach((b) => { if (b.test(st) && !S.seen.includes(b.id)) S.seen.push(b.id); }); })();
+const h = (location.hash || "").slice(1);
+if (["today", "timer", "moves", "handstand", "wins"].includes(h)) ui.tab = h;
+render();
+initDb();
+</script>
+
+<script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(() => {}));
+}
+</script>
+</body>
+</html>
