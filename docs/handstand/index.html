@@ -314,6 +314,8 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
 .d-head { fill: var(--bg); stroke: var(--ink); stroke-width: 3.5; }
 .demo-g .d-head { fill: var(--surface); }
 .d-dot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
+.d-guide { fill: none; stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 3 4; opacity: .7; }
+.d-label { font: 600 9px var(--font-body); fill: var(--muted); letter-spacing: .06em; }
 .vid { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 600; font-size: 13px; text-decoration: none; margin-top: 6px; }
 .vid::before { content: ""; width: 0; height: 0; border-left: 8px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
 .vid:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
@@ -412,14 +414,14 @@ const MOVE_MEDIA = {
 for (const [k, [d, q]] of Object.entries(MOVE_MEDIA)) Object.assign(MOVES[k], { demo: d, q });
 const STRETCH_CODES = ["SQH", "PIKE", "STRD", "WSO"];
 const WARM_MEDIA = {
-  W1: [null, "wrist circles warm up"], W2: ["W2", "wrist rocks handstand warm up"], W3: [null, "wrist flexor extensor stretch"],
-  W4: [null, "shoulder circles and arm swings warm up"], W5: ["W5", "cat cow stretch"], W6: ["W6", "thread the needle stretch"],
-  W7: ["W7", "scapular push ups"], W8: [null, "leg swings warm up"],
+  W1: ["W1", "wrist circles warm up"], W2: ["W2", "wrist rocks handstand warm up"], W3: ["W3", "wrist flexor extensor stretch"],
+  W4: ["W4", "shoulder circles and arm swings warm up"], W5: ["W5", "cat cow stretch"], W6: ["W6", "thread the needle stretch"],
+  W7: ["W7", "scapular push ups"], W8: ["W8", "bodyweight squat and leg swings warm up"],
 };
 const MOB_MEDIA = [
   ["HFL", "kneeling hip flexor stretch"], ["SQH", "deep squat hold"], ["PIKE", "seated pike fold stretch"],
   ["STRD", "seated straddle fold stretch"], ["FIG4", "lying figure 4 stretch"], ["PUPPY", "puppy pose yoga"],
-  ["WSO", "wall shoulder opener stretch"], ["ANK", "knee to wall ankle mobility drill"], [null, "wrist flexor extensor stretch"],
+  ["WSO", "wall shoulder opener stretch"], ["ANK", "knee to wall ankle mobility drill"], ["W3", "wrist flexor extensor stretch"],
 ];
 const HS_MEDIA = [
   ["M1", "hollow body hold beginner tutorial"], ["PIKEH", "pike hold handstand progression box"],
@@ -682,6 +684,30 @@ const DEMOS = {
     { A: [134, 130], E: [134, 114], S: [134, 97], H: [131, 68], K: [114, 48], F: [96, 36], k: [142, 44], f: [144, 18] },
     { A: [134, 130], E: [134, 114], S: [134, 97], H: [134, 67], K: [134, 39], F: [134, 12] } ] },
 };
+// Warm-up demos. W1 and W3 are close-ups of the hand (rig: named points joined by strokes);
+// W4 and W8 move continuously, so they use fn(u) for u in [0, 1) instead of key poses.
+const STAND_N = normPose(STAND), SQUAT_N = normPose(DEMOS.SQ.frames[1]);
+const armAt = (S, t) => [[S[0] + 17 * Math.sin(t), S[1] + 17 * Math.cos(t)], [S[0] + 33 * Math.sin(t), S[1] + 33 * Math.cos(t)]];
+Object.assign(DEMOS, {
+  W1: { period: 2400, rig: { label: "CLOSE-UP · WRIST CIRCLES",
+      segs: [["U", "E", "d-ink", 6], ["E", "W", "d-ink", 8], ["W", "T", "d-hl", 11]],
+      guides: [{ tag: "ellipse", attrs: { cx: 138, cy: 80, rx: 8, ry: 18, class: "d-guide" } }] },
+    fn: (u) => { const t = 2 * Math.PI * u; return { U: [14, 130], E: [34, 88], W: [112, 80], T: [138 + 8 * Math.cos(t), 80 + 18 * Math.sin(t)] }; } },
+  W3: { rig: { label: "CLOSE-UP · OTHER HAND PULLS",
+      segs: [["S", "W", "d-ink", 8], ["B", "P", "d-far", 11], ["W", "T", "d-hl", 11]] },
+    frames: [
+      { S: [8, 78], W: [118, 78], T: [124, 47], B: [178, 98], P: [134, 54] },
+      { S: [8, 78], W: [118, 78], T: [150, 78], B: [182, 112], P: [156, 92] },
+      { S: [8, 78], W: [118, 78], T: [124, 109], B: [176, 58], P: [134, 102] } ] },
+  W4: { hl: ["upperArm", "forearm"], period: 2600,
+    fn: (u) => { const t = 2 * Math.PI * u, [E, A] = armAt(STAND.S, t), [e, a] = armAt(STAND.S, t + Math.PI); return Object.assign({}, STAND_N, { E, A, e, a }); } },
+  W8: { hl: ["thigh"], period: 5200,
+    fn: (u) => {
+      if (u < .5) return lerpPose(STAND_N, SQUAT_N, (1 - Math.cos(4 * Math.PI * u)) / 2);
+      const ph = .7 * Math.sin(8 * Math.PI * (u - .5)), H = STAND.H;
+      return Object.assign({}, STAND_N, { K: [H[0] + 28 * Math.sin(ph), H[1] + 28 * Math.cos(ph)], F: [H[0] + 55 * Math.sin(ph), H[1] + 55 * Math.cos(ph)] });
+    } },
+});
 const NS = "http://www.w3.org/2000/svg";
 const PTS = ["S", "H", "E", "A", "K", "F", "e", "a", "k", "f"];
 function normPose(p) { const q = Object.assign({}, p); q.e = q.e || q.E; q.a = q.a || q.A; q.k = q.k || q.K; q.f = q.f || q.F; return q; }
@@ -706,9 +732,26 @@ function demoSvg(key, cls) {
 function vidLink(q) {
   return q ? `<a class="vid" href="https://www.youtube.com/results?search_query=${encodeURIComponent(q)}" target="_blank" rel="noopener">Watch real videos</a>` : "";
 }
+function lerpRig(a, b, u) { const o = {}; for (const k in a) o[k] = [a[k][0] + (b[k][0] - a[k][0]) * u, a[k][1] + (b[k][1] - a[k][1]) * u]; return o; }
+function demoSteps(n, speed) {
+  const cyc = []; for (let i = 0; i < n; i++) cyc.push(i); for (let i = n - 2; i > 0; i--) cyc.push(i);
+  const MOVE = 1000 / (speed || 1), steps = []; let total = 0;
+  cyc.forEach((i, j) => { const hold = i === 0 || i === n - 1 ? 900 : 200; steps.push([i, i, hold], [i, cyc[(j + 1) % cyc.length], MOVE]); total += hold + MOVE; });
+  return { steps, total };
+}
 function buildDemo(svg, def) {
   svg.textContent = "";
   const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  const frames = def.fn ? [def.fn(0)] : def.rig ? def.frames : def.frames.map(normPose);
+  const d = Object.assign({ def, frames, fn: def.fn, period: def.period || 3000, t0: performance.now() }, demoSteps(frames.length, def.speed));
+  if (def.rig) {
+    if (def.rig.label) mk("text", { x: 10, y: 16, class: "d-label" }).textContent = def.rig.label;
+    for (const g of def.rig.guides || []) mk(g.tag, g.attrs);
+    const segs = def.rig.segs.map(([a, b, cls, w]) => ({ a, b, el: mk("path", { class: cls, style: "stroke-width:" + (w || 5.5) }) }));
+    d.lerp = lerpRig;
+    d.draw = (p) => { for (const sg of segs) sg.el.setAttribute("d", `M${p[sg.a][0].toFixed(1)} ${p[sg.a][1].toFixed(1)}L${p[sg.b][0].toFixed(1)} ${p[sg.b][1].toFixed(1)}`); };
+    return d;
+  }
   mk("line", { x1: 6, y1: GROUND + 2, x2: 194, y2: GROUND + 2, class: "d-ground" });
   for (const p of def.props || []) {
     if (p.wall != null) mk("line", { x1: p.wall, y1: 4, x2: p.wall, y2: GROUND, class: "d-prop" });
@@ -721,19 +764,19 @@ function buildDemo(svg, def) {
     if (n === "head") { segs.head = mk("circle", { r: 6.5, class: "d-head" }); continue; }
     segs[n] = mk("path", { class: hl.includes(n) ? "d-hl" : n.endsWith("2") && !def.front ? "d-far" : "d-ink" });
   }
-  const dots = hl.filter((n) => n.length === 1).map((n) => ({ n, el: mk("circle", { r: 4.5, class: "d-dot" }) }));
-  const frames = def.frames.map(normPose), n = frames.length;
-  const cyc = []; for (let i = 0; i < n; i++) cyc.push(i); for (let i = n - 2; i > 0; i--) cyc.push(i);
-  const MOVE = 1000 / (def.speed || 1), steps = []; let total = 0;
-  cyc.forEach((i, j) => { const hold = i === 0 || i === n - 1 ? 900 : 200; steps.push([i, i, hold], [i, cyc[(j + 1) % cyc.length], MOVE]); total += hold + MOVE; });
-  return { frames, segs, dots, steps, total, t0: performance.now() };
+  d.segs = segs;
+  d.dots = hl.filter((n) => n.length === 1).map((n) => ({ n, el: mk("circle", { r: 4.5, class: "d-dot" }) }));
+  d.lerp = lerpPose;
+  d.draw = (p) => drawPose(d, p);
+  return d;
 }
 function poseAt(d, now) {
+  if (d.fn) return d.fn(reduced() ? (d.def.still != null ? d.def.still : .25) : ((now - d.t0) % d.period) / d.period);
   const fr = d.frames;
   if (fr.length === 1 || reduced()) return fr[fr.length - 1];
   let t = (now - d.t0) % d.total;
   for (const [a, b, dur] of d.steps) {
-    if (t < dur) { if (a === b) return fr[a]; const u = t / dur, e = u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; return lerpPose(fr[a], fr[b], e); }
+    if (t < dur) { if (a === b) return fr[a]; const u = t / dur, e = u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; return d.lerp(fr[a], fr[b], e); }
     t -= dur;
   }
   return fr[0];
@@ -756,7 +799,7 @@ function mountDemos() {
   document.querySelectorAll("svg[data-demo]").forEach((svg) => {
     if (svg._d) return;
     const def = DEMOS[svg.dataset.demo]; if (!def) return;
-    svg._d = buildDemo(svg, def); drawPose(svg._d, poseAt(svg._d, performance.now())); liveDemos.add(svg);
+    svg._d = buildDemo(svg, def); svg._d.draw(poseAt(svg._d, performance.now())); liveDemos.add(svg);
   });
   if (!demoRaf && liveDemos.size) demoRaf = requestAnimationFrame(demoTick);
 }
@@ -765,8 +808,8 @@ function demoTick(now) {
   for (const svg of liveDemos) {
     if (!svg.isConnected) { liveDemos.delete(svg); continue; }
     const d = svg._d;
-    if (d.frames.length < 2 || reduced() || svg.closest("details:not([open])")) continue;
-    drawPose(d, poseAt(d, now));
+    if ((!d.fn && d.frames.length < 2) || reduced() || svg.closest("details:not([open])")) continue;
+    d.draw(poseAt(d, now));
   }
   if (liveDemos.size) demoRaf = requestAnimationFrame(demoTick);
 }
