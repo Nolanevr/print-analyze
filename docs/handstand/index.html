@@ -273,6 +273,7 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
 .g-phase.hold { color: var(--accent); }
 .g-phase.rest, .g-phase.ready { color: var(--warm); }
 .g-acts { display: grid; gap: 10px; }
+.g-body .vid { justify-self: center; }
 .g-link { border: 0; background: transparent; color: var(--muted); font-weight: 600; font-size: 14px; padding: 6px; text-decoration: underline; text-underline-offset: 3px; }
 .g-done .trophy { width: 96px; height: 96px; margin: 0 auto; }
 .g-done .trophy .ring { fill: var(--gold); }
@@ -298,6 +299,40 @@ textarea { width: 100%; min-height: 70px; resize: vertical; border: 1.5px solid 
 .pop { position: fixed; z-index: 65; pointer-events: none; font-family: var(--font-display); font-weight: 800; font-size: 18px; color: var(--gold); animation: pop .9s ease-out forwards; }
 @keyframes pop { from { transform: translate(-50%, 0); opacity: 1; } to { transform: translate(-50%, -48px); opacity: 0; } }
 #confetti { position: fixed; inset: 0; z-index: 60; pointer-events: none; width: 100%; height: 100%; }
+.demo { display: block; width: 100%; height: auto; aspect-ratio: 200 / 140; max-width: 100%; background: var(--bg); border-radius: 10px; }
+.demo-md { max-width: 280px; margin-top: 8px; }
+.demo-lg { max-width: 360px; justify-self: center; }
+.demo-g { max-width: 300px; margin: 0 auto; background: var(--surface); }
+.demo-g.sm { max-width: 190px; }
+.d-ground { stroke: var(--line); stroke-width: 2.5; stroke-linecap: round; }
+.d-prop { stroke: var(--muted); stroke-width: 2.5; stroke-linecap: round; opacity: .55; fill: none; }
+.d-prop-fill { fill: var(--line); }
+.d-ink, .d-far, .d-hl { fill: none; stroke-width: 5.5; stroke-linecap: round; stroke-linejoin: round; }
+.d-ink { stroke: var(--ink); }
+.d-far { stroke: var(--muted); opacity: .5; }
+.d-hl { stroke: var(--accent); }
+.d-head { fill: var(--bg); stroke: var(--ink); stroke-width: 3.5; }
+.demo-g .d-head { fill: var(--surface); }
+.d-dot { fill: var(--accent); stroke: var(--bg); stroke-width: 2; }
+.vid { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 600; font-size: 13px; text-decoration: none; margin-top: 6px; }
+.vid::before { content: ""; width: 0; height: 0; border-left: 8px solid currentColor; border-top: 5px solid transparent; border-bottom: 5px solid transparent; }
+.vid:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.move { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+.move:first-child { border-top: 0; padding-top: 0; }
+.move-pic { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+.move-pic .demo { flex: 1 1 140px; max-width: 300px; }
+.move.nopic { grid-template-columns: 52px 1fr; }
+.move.nopic .move-tag { aspect-ratio: auto; padding: 8px 0; font-size: 18px; width: 52px; }
+.move-tag { font-family: var(--font-display); font-stretch: 80%; font-weight: 800; font-size: 22px; color: var(--accent); background: var(--bg); border-radius: 10px; aspect-ratio: 200 / 140; display: grid; place-content: center; }
+.move-txt { min-width: 0; display: grid; gap: 2px; justify-items: start; }
+.move-txt b { font-weight: 600; }
+.move-txt p { margin: 0; color: var(--muted); font-size: 14px; }
+.move-txt .code { margin-left: 0; }
+details.mini summary { cursor: pointer; list-style: none; }
+details.mini summary::-webkit-details-marker { display: none; }
+details.mini summary::after { content: " ▸ how"; color: var(--accent); font-weight: 600; font-size: 12px; white-space: nowrap; }
+details.mini[open] summary::after { content: " ▾"; }
+.mini-cue { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
 @media (prefers-reduced-motion: reduce) { .bar > span, .xpbar span { transition: none; } .pop { animation-duration: .01s; } }
 @media (max-width: 380px) { .session-head h2 { font-size: 26px; } .clock-big { font-size: 80px; } .pip { width: 34px; height: 34px; } .xp { flex-basis: 170px; } }
 </style>
@@ -362,6 +397,35 @@ const MOVES = {
   STRD: { name: "Straddle stretch", cue: "Sit with legs wide and fold forward." },
   WSO:  { name: "Wall shoulder opener", cue: "Hands on a wall at hip height, walk back, and press the chest toward the floor." },
 };
+// demo animation key + a YouTube search for real-person videos
+const MOVE_MEDIA = {
+  M1: ["M1", "hollow body hold beginner tutorial"], M2: ["M2", "chest to wall handstand hold tutorial"],
+  M3: ["M3", "pike push up tutorial"], M4: ["M4", "inverted row under table at home"],
+  M5: ["M5", "push up progression for beginners"], M6: [["SQ", "SSQ"], "bodyweight squat and split squat form"],
+  M7: ["M7", "glute bridge proper form"], M8: ["M8", "straight arm plank proper form"],
+  Y: ["Y", "prone Y raise exercise"], LSIT: ["LSIT", "tuck L-sit on the floor tutorial"],
+  PLAN: ["PLAN", "planche lean tutorial beginner"], ARCH: ["ARCH", "arch hold superman hold gymnastics"],
+  PIST: ["PIST", "assisted pistol squat door frame"], SQH: ["SQH", "deep squat hold mobility"],
+  PIKE: ["PIKE", "seated pike stretch hamstrings"], STRD: ["STRD", "seated straddle stretch beginner"],
+  WSO: ["WSO", "wall shoulder opener stretch"],
+};
+for (const [k, [d, q]] of Object.entries(MOVE_MEDIA)) Object.assign(MOVES[k], { demo: d, q });
+const STRETCH_CODES = ["SQH", "PIKE", "STRD", "WSO"];
+const WARM_MEDIA = {
+  W1: [null, "wrist circles warm up"], W2: ["W2", "wrist rocks handstand warm up"], W3: [null, "wrist flexor extensor stretch"],
+  W4: [null, "shoulder circles and arm swings warm up"], W5: ["W5", "cat cow stretch"], W6: ["W6", "thread the needle stretch"],
+  W7: ["W7", "scapular push ups"], W8: [null, "leg swings warm up"],
+};
+const MOB_MEDIA = [
+  ["HFL", "kneeling hip flexor stretch"], ["SQH", "deep squat hold"], ["PIKE", "seated pike fold stretch"],
+  ["STRD", "seated straddle fold stretch"], ["FIG4", "lying figure 4 stretch"], ["PUPPY", "puppy pose yoga"],
+  ["WSO", "wall shoulder opener stretch"], ["ANK", "knee to wall ankle mobility drill"], [null, "wrist flexor extensor stretch"],
+];
+const HS_MEDIA = [
+  ["M1", "hollow body hold beginner tutorial"], ["PIKEH", "pike hold handstand progression box"],
+  ["M2", "chest to wall handstand tutorial"], ["KICK", "back to wall handstand kick up tutorial"],
+  ["FREE", "freestanding handstand kick up and cartwheel bail"],
+];
 const CORE_CODES = ["M1","M2","M3","M4","M5","M6","M7","M8"];
 const EXTRA_CODES = ["Y","LSIT","PLAN","ARCH","PIST"];
 
@@ -419,7 +483,7 @@ const SESSIONS = {
     W(), { k: "ex", id: "pu", m: "M5", s: 4, r: "8-12", rest: 75 },
     { k: "ex", id: "pike", m: "M3", s: 3, r: "6-10", rest: 75 },
     { k: "ex", id: "row", m: "M4", s: 3, r: "8-12", rest: 75 },
-    { k: "ex", id: "sq", m: "M6", s: 3, r: "10-15", rest: 60, name: "Squat" },
+    { k: "ex", id: "sq", m: "M6", s: 3, r: "10-15", rest: 60, name: "Squat", demo: "SQ" },
     { k: "ex", id: "hollow", m: "M1", s: 3, h: 30, rest: 45 },
     { k: "hs", id: "hs", s: 4, h: 25, r: "20-30 s", rest: 60 },
     MOB(),
@@ -460,7 +524,7 @@ const SESSIONS = {
   fri: { name: "Full-body B", focus: "Pull and legs focus", mins: 45, hard: true, blocks: [{ items: [
     W(), { k: "ex", id: "row", m: "M4", s: 4, r: "8-12", rest: 75 },
     { k: "ex", id: "y", m: "Y", s: 3, r: "12", rest: 60 },
-    { k: "ex", id: "ssq", m: "M6", s: 3, r: "10 / leg", rest: 60, name: "Split squat" },
+    { k: "ex", id: "ssq", m: "M6", s: 3, r: "10 / leg", rest: 60, name: "Split squat", demo: "SSQ" },
     { k: "ex", id: "gb", m: "M7", s: 3, r: "15", rest: 60 },
     { k: "ex", id: "pu", m: "M5", s: 3, r: "8-12", rest: 75 },
     { k: "hs", id: "hs", s: 4, h: 25, r: "20-30 s", rest: 60 },
@@ -481,7 +545,7 @@ const SESSIONS = {
         { k: "ex", id: "pu", m: "M5", s: 3, r: "10-15", note: "Put your feet on the bed once this feels easy." },
         { k: "ex", id: "pike", m: "M3", s: 3, r: "8-10" },
         { k: "ex", id: "y", m: "Y", s: 3, r: "12" },
-        { k: "ex", id: "ssq", m: "M6", s: 3, r: "10 / leg", name: "Split squat", note: "Hold a wall or chair lightly for balance." },
+        { k: "ex", id: "ssq", m: "M6", s: 3, r: "10 / leg", name: "Split squat", demo: "SSQ", note: "Hold a wall or chair lightly for balance." },
         { k: "ex", id: "gb", m: "M7", s: 3, r: "15", note: "Move to one leg when it gets easy." },
         { k: "ex", id: "hollow", m: "M1", s: 3, h: 30 },
         { k: "ex", id: "plank", m: "M8", s: 3, h: 40, r: "30-45 s", rest: 75, note: "Last move of the round. Rest 60-90 s after it." },
@@ -537,6 +601,183 @@ const BADGES = [
   { id: "free", name: "Freestanding", how: "Reach handstand step 5", g: "flip", test: () => S.step >= 4 },
   { id: "habit", name: "It's a habit", how: "25 workouts", g: "star", test: (s) => s.workouts >= 25 },
 ];
+
+/* ---------- animated demos: a stick figure moving between key poses ----------
+   Side view, ground at y=130. Points: S shoulder, H hip, E elbow, A hand, K knee, F foot;
+   lower-case e/a/k/f are the far-side limbs; M bends the spine; h places the head. */
+const GROUND = 130;
+const W_ = (base, o) => Object.assign({}, base, o);
+const ALL4 = { A: [70, 130], E: [70, 114], S: [70, 97], H: [103, 101], K: [108, 128], F: [135, 130] };
+const PLANK = { A: [70, 130], E: [70, 114], S: [70, 97], H: [98, 108], K: [124, 119], F: [150, 130] };
+const PRONE = { h: [58, 123], S: [68, 127], H: [98, 128], E: [51, 127], A: [35, 127], K: [126, 128], F: [153, 128] };
+const STAND = { F: [100, 130], K: [101, 103], H: [100, 75], S: [100, 45], E: [101, 62], A: [102, 78] };
+const PIKEUP = { A: [70, 130], E: [72, 114], S: [74, 97], H: [98, 80], K: [111, 105], F: [124, 130] };
+const SUPINE = { h: [52, 124], S: [64, 127], H: [94, 127], E: [80, 128], A: [96, 128], K: [112, 105], F: [126, 130] };
+const SQUAT_DEEP = { F: [100, 130], K: [118, 112], H: [94, 120], S: [104, 92], E: [116, 104], A: [110, 90] };
+const HANDSTAND_WALL = { A: [134, 130], E: [134, 114], S: [134, 97], H: [138, 67], K: [144, 40], F: [150, 14] };
+const KICK_START = [
+  { F: [78, 130], K: [78, 102], H: [78, 74], S: [78, 44], E: [79, 27], A: [80, 11] },
+  { F: [96, 130], K: [104, 106], H: [86, 96], S: [118, 98], E: [126, 114], A: [134, 130], k: [64, 110], f: [46, 124] },
+];
+const BODY = ["torso", "thigh", "shin"];
+const DEMOS = {
+  M1: { hl: ["torso"], frames: [
+    { h: [52, 124], S: [66, 127], H: [96, 127], E: [49, 127], A: [33, 127], K: [124, 127], F: [151, 127] },
+    { S: [68, 120], H: [97, 128], E: [52, 113], A: [37, 107], K: [124, 123], F: [150, 116] } ] },
+  M2: { hl: BODY, props: [{ wall: 153 }], frames: [
+    { A: [98, 130], E: [100, 114], S: [102, 97], H: [132, 101], K: [146, 77], F: [150, 50] },
+    { A: [120, 130], E: [122, 114], S: [125, 97], H: [138, 70], K: [146, 44], F: [150, 17] },
+    { A: [140, 130], E: [140, 114], S: [141, 97], H: [144, 67], K: [147, 40], F: [149, 13] } ] },
+  M3: { hl: ["H"], frames: [PIKEUP, { A: [70, 130], E: [82, 121], S: [66, 112], H: [88, 92], K: [106, 111], F: [124, 130] }] },
+  M4: { hl: BODY, props: [{ table: [30, 122, 68] }], frames: [
+    { A: [118, 74], E: [114, 89], S: [110, 104], H: [138, 113], K: [164, 122], F: [190, 130] },
+    { A: [118, 74], E: [130, 88], S: [117, 84], H: [142, 99], K: [166, 114], F: [190, 130] } ] },
+  M5: { hl: BODY, frames: [PLANK, { A: [70, 130], E: [84, 120], S: [66, 121], H: [95, 125], K: [122, 128], F: [150, 130] }] },
+  SQ: { hl: ["shin"], frames: [STAND, { F: [100, 130], K: [118, 110], H: [92, 104], S: [104, 76], E: [120, 74], A: [136, 73] }] },
+  SSQ: { hl: ["shin"], frames: [
+    { F: [118, 130], K: [113, 104], H: [92, 80], S: [92, 50], E: [93, 67], A: [94, 83], k: [78, 105], f: [66, 128] },
+    { F: [118, 130], K: [120, 103], H: [92, 102], S: [92, 72], E: [93, 89], A: [94, 105], k: [88, 127], f: [64, 128] } ] },
+  M7: { hl: ["H"], frames: [SUPINE, W_(SUPINE, { S: [66, 126], H: [92, 108], K: [117, 100] })] },
+  M8: { hl: ["torso"], frames: [W_(ALL4, {}), PLANK] },
+  Y: { hl: ["upperArm", "forearm"], frames: [PRONE, { h: [62, 112], S: [71, 118], H: [100, 128], E: [56, 110], A: [42, 102], K: [128, 128], F: [155, 128] }] },
+  ARCH: { hl: ["torso", "thigh"], frames: [PRONE, { h: [62, 112], S: [71, 118], H: [100, 128], E: [54, 113], A: [38, 108], K: [127, 124], F: [153, 116] }] },
+  LSIT: { hl: ["upperArm", "forearm"], frames: [
+    { S: [100, 99], H: [100, 128], E: [104, 114], A: [106, 130], K: [123, 108], F: [136, 130] },
+    { S: [101, 97], H: [99, 121], E: [103, 114], A: [105, 130], K: [119, 104], F: [127, 123] } ] },
+  PLAN: { hl: ["upperArm", "forearm"], frames: [PLANK, { A: [70, 130], E: [64, 114], S: [58, 99], H: [86, 110], K: [112, 120], F: [139, 129] }] },
+  PIST: { hl: ["shin"], props: [{ frame: 76 }], frames: [
+    { F: [100, 130], K: [100, 102], H: [100, 74], S: [100, 44], E: [88, 54], A: [78, 58], k: [106, 100], f: [112, 124] },
+    { F: [100, 130], K: [118, 112], H: [96, 116], S: [107, 88], E: [92, 84], A: [78, 80], k: [124, 112], f: [151, 108] } ] },
+  SQH: { hl: ["E"], frames: [STAND, SQUAT_DEEP] },
+  PIKE: { hl: ["thigh", "shin"], frames: [
+    { S: [80, 99], H: [80, 128], E: [82, 82], A: [84, 66], K: [108, 128], F: [135, 128] },
+    { S: [104, 113], H: [80, 128], E: [120, 118], A: [136, 122], K: [108, 128], F: [135, 128] } ] },
+  STRD: { front: true, hl: ["thigh", "thigh2"], frames: [
+    { S: [100, 98], H: [100, 128], E: [90, 112], A: [86, 127], e: [110, 112], a: [114, 127], K: [73, 128], F: [46, 128], k: [127, 128], f: [154, 128] },
+    { S: [100, 112], H: [100, 128], E: [86, 118], A: [72, 124], e: [114, 118], a: [128, 124], K: [73, 128], F: [46, 128], k: [127, 128], f: [154, 128] } ] },
+  WSO: { hl: ["upperArm"], props: [{ wall: 42 }], frames: [
+    { F: [112, 130], K: [112, 102], H: [110, 74], S: [80, 76], E: [63, 76], A: [46, 76] },
+    { F: [112, 130], K: [112, 102], H: [110, 74], S: [81, 84], E: [63, 81], A: [46, 77] } ] },
+  W2: { hl: ["forearm"], frames: [W_(ALL4, { S: [76, 99], E: [73, 114], H: [108, 101] }), W_(ALL4, { S: [58, 99], E: [64, 114], H: [92, 101] })] },
+  W5: { hl: ["torso"], frames: [W_(ALL4, { M: [88, 84], h: [64, 110] }), W_(ALL4, { M: [88, 108], h: [60, 88] })] },
+  W6: { hl: ["upperArm", "forearm"], frames: [
+    W_(ALL4, { E: [70, 80], A: [70, 64], e: [70, 114], a: [70, 130] }),
+    W_(ALL4, {}),
+    W_(ALL4, { S: [74, 112], E: [86, 122], A: [102, 127], e: [66, 121], a: [70, 130], h: [63, 118] }) ] },
+  W7: { hl: ["S"], frames: [PLANK, W_(PLANK, { S: [70, 103], E: [70, 117], H: [98, 112], K: [124, 121] })] },
+  HFL: { hl: ["thigh2"], frames: [
+    { F: [68, 130], K: [72, 103], H: [100, 104], S: [100, 74], E: [93, 90], A: [86, 104], k: [118, 128], f: [146, 128] },
+    { F: [68, 130], K: [66, 106], H: [93, 110], S: [95, 80], E: [86, 95], A: [78, 107], k: [118, 128], f: [146, 128] } ] },
+  FIG4: { hl: ["thigh2", "shin2"], frames: [W_(SUPINE, {}), W_(SUPINE, { E: [74, 116], A: [88, 106], K: [82, 102], F: [105, 90], k: [100, 104], f: [84, 96] })] },
+  PUPPY: { hl: ["upperArm", "torso"], frames: [ALL4, W_(ALL4, { A: [42, 128], E: [58, 126], S: [76, 118], h: [66, 121] })] },
+  ANK: { hl: ["shin"], frames: [
+    { F: [74, 130], K: [76, 103], H: [102, 106], S: [102, 76], E: [94, 90], A: [84, 100], k: [118, 128], f: [144, 128] },
+    { F: [74, 130], K: [60, 107], H: [90, 112], S: [90, 82], E: [77, 93], A: [64, 104], k: [118, 128], f: [144, 128] } ] },
+  PIKEH: { hl: ["H"], props: [{ box: [120, 152, 100] }], frames: [
+    W_(PIKEUP, {}), { A: [80, 130], E: [80, 114], S: [81, 97], H: [86, 67], K: [111, 83], F: [136, 98] } ] },
+  KICK: { hl: BODY, props: [{ wall: 153 }], speed: 0.8, frames: [...KICK_START,
+    { A: [134, 130], E: [134, 114], S: [134, 97], H: [130, 68], K: [110, 50], F: [90, 38], k: [146, 46], f: [152, 22] },
+    HANDSTAND_WALL ] },
+  FREE: { hl: BODY, speed: 0.8, frames: [...KICK_START,
+    { A: [134, 130], E: [134, 114], S: [134, 97], H: [131, 68], K: [114, 48], F: [96, 36], k: [142, 44], f: [144, 18] },
+    { A: [134, 130], E: [134, 114], S: [134, 97], H: [134, 67], K: [134, 39], F: [134, 12] } ] },
+};
+const NS = "http://www.w3.org/2000/svg";
+const PTS = ["S", "H", "E", "A", "K", "F", "e", "a", "k", "f"];
+function normPose(p) { const q = Object.assign({}, p); q.e = q.e || q.E; q.a = q.a || q.A; q.k = q.k || q.K; q.f = q.f || q.F; return q; }
+function autoPt(p, k) {
+  if (k === "M") return [(p.S[0] + p.H[0]) / 2, (p.S[1] + p.H[1]) / 2];
+  const dx = p.S[0] - p.H[0], dy = p.S[1] - p.H[1], L = Math.hypot(dx, dy) || 1;
+  return [p.S[0] + dx / L * 10, p.S[1] + dy / L * 10];
+}
+function lerpPose(a, b, u) {
+  const o = {};
+  for (const k of PTS) o[k] = [a[k][0] + (b[k][0] - a[k][0]) * u, a[k][1] + (b[k][1] - a[k][1]) * u];
+  for (const k of ["M", "h"]) {
+    if (!a[k] && !b[k]) { o[k] = null; continue; }
+    const pa = a[k] || autoPt(a, k), pb = b[k] || autoPt(b, k);
+    o[k] = [pa[0] + (pb[0] - pa[0]) * u, pa[1] + (pb[1] - pa[1]) * u];
+  }
+  return o;
+}
+function demoSvg(key, cls) {
+  return key && DEMOS[key] ? `<svg class="demo ${cls || ""}" viewBox="0 0 200 140" data-demo="${key}" role="img" aria-label="Animated demo of the move"></svg>` : "";
+}
+function vidLink(q) {
+  return q ? `<a class="vid" href="https://www.youtube.com/results?search_query=${encodeURIComponent(q)}" target="_blank" rel="noopener">Watch real videos</a>` : "";
+}
+function buildDemo(svg, def) {
+  svg.textContent = "";
+  const mk = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); svg.appendChild(e); return e; };
+  mk("line", { x1: 6, y1: GROUND + 2, x2: 194, y2: GROUND + 2, class: "d-ground" });
+  for (const p of def.props || []) {
+    if (p.wall != null) mk("line", { x1: p.wall, y1: 4, x2: p.wall, y2: GROUND, class: "d-prop" });
+    if (p.frame != null) mk("line", { x1: p.frame, y1: 14, x2: p.frame, y2: GROUND, class: "d-prop" });
+    if (p.table) { const [x0, x1, y] = p.table; mk("rect", { x: x0, y, width: x1 - x0, height: 5, rx: 1.5, class: "d-prop-fill" }); mk("line", { x1: x0 + 4, y1: y + 5, x2: x0 + 4, y2: GROUND, class: "d-prop" }); mk("line", { x1: x1 - 4, y1: y + 5, x2: x1 - 4, y2: GROUND, class: "d-prop" }); }
+    if (p.box) { const [x0, x1, y] = p.box; mk("rect", { x: x0, y, width: x1 - x0, height: GROUND - y, rx: 2, class: "d-prop-fill" }); }
+  }
+  const hl = def.hl || [], segs = {};
+  for (const n of ["upperArm2", "forearm2", "thigh2", "shin2", "torso", "thigh", "shin", "head", "upperArm", "forearm"]) {
+    if (n === "head") { segs.head = mk("circle", { r: 6.5, class: "d-head" }); continue; }
+    segs[n] = mk("path", { class: hl.includes(n) ? "d-hl" : n.endsWith("2") && !def.front ? "d-far" : "d-ink" });
+  }
+  const dots = hl.filter((n) => n.length === 1).map((n) => ({ n, el: mk("circle", { r: 4.5, class: "d-dot" }) }));
+  const frames = def.frames.map(normPose), n = frames.length;
+  const cyc = []; for (let i = 0; i < n; i++) cyc.push(i); for (let i = n - 2; i > 0; i--) cyc.push(i);
+  const MOVE = 1000 / (def.speed || 1), steps = []; let total = 0;
+  cyc.forEach((i, j) => { const hold = i === 0 || i === n - 1 ? 900 : 200; steps.push([i, i, hold], [i, cyc[(j + 1) % cyc.length], MOVE]); total += hold + MOVE; });
+  return { frames, segs, dots, steps, total, t0: performance.now() };
+}
+function poseAt(d, now) {
+  const fr = d.frames;
+  if (fr.length === 1 || reduced()) return fr[fr.length - 1];
+  let t = (now - d.t0) % d.total;
+  for (const [a, b, dur] of d.steps) {
+    if (t < dur) { if (a === b) return fr[a]; const u = t / dur, e = u < .5 ? 2 * u * u : 1 - Math.pow(-2 * u + 2, 2) / 2; return lerpPose(fr[a], fr[b], e); }
+    t -= dur;
+  }
+  return fr[0];
+}
+function drawPose(d, p) {
+  const s = d.segs, f = (v) => v.toFixed(1);
+  const L = (a, b) => `M${f(a[0])} ${f(a[1])}L${f(b[0])} ${f(b[1])}`;
+  s.upperArm2.setAttribute("d", L(p.S, p.e)); s.forearm2.setAttribute("d", L(p.e, p.a));
+  s.thigh2.setAttribute("d", L(p.H, p.k)); s.shin2.setAttribute("d", L(p.k, p.f));
+  s.thigh.setAttribute("d", L(p.H, p.K)); s.shin.setAttribute("d", L(p.K, p.F));
+  s.upperArm.setAttribute("d", L(p.S, p.E)); s.forearm.setAttribute("d", L(p.E, p.A));
+  const M = p.M || autoPt(p, "M"), cx = 2 * M[0] - (p.S[0] + p.H[0]) / 2, cy = 2 * M[1] - (p.S[1] + p.H[1]) / 2;
+  s.torso.setAttribute("d", `M${f(p.S[0])} ${f(p.S[1])}Q${f(cx)} ${f(cy)} ${f(p.H[0])} ${f(p.H[1])}`);
+  const h = p.h || autoPt(p, "h");
+  s.head.setAttribute("cx", f(h[0])); s.head.setAttribute("cy", f(h[1]));
+  for (const dt of d.dots) { const q = p[dt.n]; dt.el.setAttribute("cx", f(q[0])); dt.el.setAttribute("cy", f(q[1])); }
+}
+const liveDemos = new Set(); let demoRaf = 0;
+function mountDemos() {
+  document.querySelectorAll("svg[data-demo]").forEach((svg) => {
+    if (svg._d) return;
+    const def = DEMOS[svg.dataset.demo]; if (!def) return;
+    svg._d = buildDemo(svg, def); drawPose(svg._d, poseAt(svg._d, performance.now())); liveDemos.add(svg);
+  });
+  if (!demoRaf && liveDemos.size) demoRaf = requestAnimationFrame(demoTick);
+}
+function demoTick(now) {
+  demoRaf = 0;
+  for (const svg of liveDemos) {
+    if (!svg.isConnected) { liveDemos.delete(svg); continue; }
+    const d = svg._d;
+    if (d.frames.length < 2 || reduced() || svg.closest("details:not([open])")) continue;
+    drawPose(d, poseAt(d, now));
+  }
+  if (liveDemos.size) demoRaf = requestAnimationFrame(demoTick);
+}
+function itemDemo(it) { return it.k === "hs" ? HS_MEDIA[S.step][0] : it.demo || [].concat(MOVES[it.m].demo)[0]; }
+function itemQ(it) { return it.k === "hs" ? HS_MEDIA[S.step][1] : it.demo === "SSQ" ? "split squat form" : MOVES[it.m].q; }
+const warmLi = (w) => { const [d, q] = WARM_MEDIA[w[0]]; return `<li><details class="mini"><summary><b>${w[1]}.</b> ${esc(w[2])}</summary>${demoSvg(d, "demo-md")}${vidLink(q)}</details></li>`; };
+const mobLi = (m, i) => { const [d, q] = MOB_MEDIA[i]; return `<li><details class="mini"><summary><b>${esc(m[0])}:</b> ${esc(m[2])}</summary><p class="mini-cue">${esc(m[1])}</p>${demoSvg(d, "demo-md")}${vidLink(q)}</details></li>`; };
+function moveRow(tag, name, text, demo, q) {
+  const pics = [].concat(demo || []).map((d) => demoSvg(d)).join("");
+  return `<div class="move ${pics ? "" : "nopic"}"><div class="move-pic">${pics || `<div class="move-tag">${esc(tag)}</div>`}</div><div class="move-txt">${pics && tag ? `<span class="code">${esc(tag)}</span>` : ""}<b>${esc(name)}</b><p>${esc(text)}</p>${vidLink(q)}</div></div>`;
+}
 
 /* ---------- state ---------- */
 const KEY = "handstand-plan-v1";
@@ -760,6 +1001,7 @@ function render() {
   else if (ui.tab === "handstand") main.innerHTML = viewHandstand();
   else main.innerHTML = viewWins(st);
   if (ui.guide) renderGuide();
+  mountDemos();
 }
 function renderDays() {
   const dates = weekDates(), t = todayIdx();
@@ -824,7 +1066,7 @@ function itemHtml(it, e) {
     const on = !!e.sets.warm;
     return `<div class="ex ${on ? "complete" : ""}">
       <div class="ex-top"><div class="ex-name">Warm-up <span class="code">W1-W8</span></div><div class="ex-dose">5-8 min</div></div>
-      <details class="cue"><summary>Show the 8 moves</summary><ol>${WARMUP.map((w) => `<li><b>${w[1]}.</b> ${esc(w[2])}</li>`).join("")}</ol>
+      <details class="cue"><summary>Show the 8 moves</summary><ol>${WARMUP.map(warmLi).join("")}</ol>
       ${it.extra ? `<p>Handstand-only day: add the wall shoulder opener, 3 x 20 s.</p>` : ""}</details>
       <div class="ex-bottom"><button class="check ${on ? "on" : ""}" data-check="warm">${on ? "✓ Warmed up" : "Mark warm-up done"}</button></div>
     </div>`;
@@ -833,7 +1075,7 @@ function itemHtml(it, e) {
     const on = !!e.sets.mob;
     return `<div class="ex ${on ? "complete" : ""}">
       <div class="ex-top"><div class="ex-name">${esc(it.label || "Daily mobility routine")}</div><div class="ex-dose">12-15 min</div></div>
-      <details class="cue"><summary>Show the routine</summary><ul>${MOBILITY.map((m) => `<li><b>${esc(m[0])}:</b> ${esc(m[2])}</li>`).join("")}</ul></details>
+      <details class="cue"><summary>Show the routine</summary><ul>${MOBILITY.map(mobLi).join("")}</ul></details>
       <div class="ex-bottom"><button class="check ${on ? "on" : ""}" data-check="mob">${on ? "✓ Done" : "Mark done"}</button></div>
     </div>`;
   }
@@ -846,7 +1088,7 @@ function itemHtml(it, e) {
     : (it.rest ? `<button class="go" data-rest="${it.rest}" data-label="${esc(name)}">${PLAY}Rest ${it.rest} s</button>` : "");
   return `<div class="ex ${n >= it.s ? "complete" : ""}">
     <div class="ex-top"><div class="ex-name">${esc(name)}${code ? `<span class="code">${code}</span>` : ""}</div><div class="ex-dose">${esc(itemDose(it))}</div></div>
-    <details class="cue"><summary>Form</summary><p>${esc(itemCue(it))}</p></details>
+    <details class="cue"><summary>How to do it</summary>${demoSvg(itemDemo(it), "demo-md")}<p>${esc(itemCue(it))}</p>${vidLink(itemQ(it))}</details>
     <div class="ex-bottom"><div class="pips">${pips}</div>${go}</div>
   </div>`;
 }
@@ -875,21 +1117,22 @@ function viewMoves() {
   const seg = ui.movesSeg;
   let body = "";
   if (seg === "moves") {
-    body = `<div class="card"><div class="eyebrow">Movement reference</div><div class="list">
-      ${CORE_CODES.map((c) => `<div class="li"><div class="tag">${c}</div><div><b>${esc(MOVES[c].name)}</b><p>${esc(MOVES[c].cue)}</p></div></div>`).join("")}
-    </div></div>
+    body = `<div class="card"><div class="eyebrow">Movement reference</div>
+      <p class="note">Each figure loops through the move. The coloured part is what to focus on. Tap a video link to see real people doing it.</p>
+      <div class="list">${CORE_CODES.map((c) => moveRow(c, MOVES[c].name, MOVES[c].cue, MOVES[c].demo, MOVES[c].q)).join("")}</div></div>
     <div class="card"><div class="eyebrow">Extra moves</div><div class="list">
-      ${EXTRA_CODES.map((c) => `<div class="li"><div class="tag">+</div><div><b>${esc(MOVES[c].name)}</b><p>${esc(MOVES[c].cue)}</p></div></div>`).join("")}
-    </div></div>`;
+      ${EXTRA_CODES.map((c) => moveRow("", MOVES[c].name, MOVES[c].cue, MOVES[c].demo, MOVES[c].q)).join("")}</div></div>
+    <div class="card"><div class="eyebrow">Stretches and holds</div><div class="list">
+      ${STRETCH_CODES.map((c) => moveRow("", MOVES[c].name, MOVES[c].cue, MOVES[c].demo, MOVES[c].q)).join("")}</div></div>`;
   } else if (seg === "warm") {
     body = `<div class="card"><div class="eyebrow">Warm-up routine · 5-8 min</div>
       <p class="lede">Do these in order before every full-body session and before handstand practice. Wrists and shoulders matter most, so do not skip W1-W4.</p>
-      <div class="list">${WARMUP.map((w) => `<div class="li"><div class="tag">${w[0]}</div><div><b>${esc(w[1])}</b><p>${esc(w[2])}</p></div></div>`).join("")}</div>
+      <div class="list">${WARMUP.map((w) => moveRow(w[0], w[1], w[2], WARM_MEDIA[w[0]][0], WARM_MEDIA[w[0]][1])).join("")}</div>
       <p class="note">Handstand-only days: add a wall shoulder opener, 3 x 20 s.</p></div>`;
   } else {
     body = `<div class="card"><div class="eyebrow">Daily mobility · 12-15 min</div>
       <p class="lede">Every day, rest days included, when your muscles are warm.</p>
-      <div class="list">${MOBILITY.map((m, i) => `<div class="li"><div class="tag">${i + 1}</div><div><b>${esc(m[0])}</b><p>${esc(m[1])} ${esc(m[2])}.</p></div></div>`).join("")}</div></div>
+      <div class="list">${MOBILITY.map((m, i) => moveRow(String(i + 1), m[0], m[1] + " " + m[2] + ".", MOB_MEDIA[i][0], MOB_MEDIA[i][1])).join("")}</div></div>
       <div class="card"><div class="eyebrow">Rules</div><ul class="rules">${MOBILITY_RULES.map((r) => `<li>${esc(r)}</li>`).join("")}</ul></div>`;
   }
   return `<section class="view">
@@ -904,6 +1147,7 @@ function viewHandstand() {
     <div class="card">
       <div class="eyebrow">Your handstand step</div>
       <h2 style="font-size:28px;font-stretch:78%;text-transform:uppercase;line-height:1.05">Step ${S.step + 1}: ${esc(HS_STEPS[S.step][0])}</h2>
+      ${demoSvg(HS_MEDIA[S.step][0], "demo-lg")}${vidLink(HS_MEDIA[S.step][1])}
       <p class="lede">Move to the next step when you can hold the current one for 3 x 30 seconds. Expect a 30-60 second wall hold in 1-2 months and a freestanding handstand after several months of regular practice.</p>
       <div class="row"><button class="btn ghost" data-act="stepdown" ${S.step === 0 ? "disabled" : ""}>Back a step</button><button class="btn" data-act="stepup" ${S.step === 4 ? "disabled" : ""}>I hit 3 x 30 s, move up (+${XP_STEP} XP)</button></div>
     </div>
@@ -980,7 +1224,7 @@ function renderGuide() {
     const idx = items.indexOf(cur) + 1;
     const head = `<div class="eyebrow">${idx} of ${items.length}</div>`;
     if (cur.k === "warm" || cur.k === "mob") {
-      const list = cur.k === "warm" ? WARMUP.map((w) => `<li><b>${w[1]}.</b> ${esc(w[2])}</li>`).join("") : MOBILITY.map((m) => `<li><b>${esc(m[0])}:</b> ${esc(m[2])}</li>`).join("");
+      const list = cur.k === "warm" ? WARMUP.map(warmLi).join("") : MOBILITY.map(mobLi).join("");
       body = `<div class="g-body">${head}<h2>${cur.k === "warm" ? "Warm-up" : "Mobility"}</h2>
         <div class="g-set">${cur.k === "warm" ? "5-8 min" : "12-15 min"} <span>· go down the list</span></div>
         <${cur.k === "warm" ? "ol" : "ul"} class="g-list">${list}</${cur.k === "warm" ? "ol" : "ul"}></div>`;
@@ -988,15 +1232,16 @@ function renderGuide() {
     } else {
       const n = e.sets[cur.id] || 0;
       const timing = T.phase ? `<div class="g-phase ${T.phase}" id="gPhase">${T.phase === "ready" ? "Get ready" : T.phase === "hold" ? "Hold it" : "Rest"}</div><div class="g-clock" id="gClock">${fmt(T.remain())}</div>` : "";
-      body = `<div class="g-body">${head}<h2>${esc(itemName(cur))}</h2>
+      body = `<div class="g-body">${head}${demoSvg(itemDemo(cur), T.phase ? "demo-g sm" : "demo-g")}<h2>${esc(itemName(cur))}</h2>
         <div class="g-set">Set ${n + 1} of ${cur.s} <span>· ${esc(cur.r || cur.h + " s")}${cur.r && !cur.h ? " reps" : ""}</span></div>
-        ${timing || `<p class="g-cue">${esc(itemCue(cur))}</p>`}</div>`;
+        ${timing || `<p class="g-cue">${esc(itemCue(cur))}</p>${vidLink(itemQ(cur))}`}</div>`;
       if (T.phase) acts = `<div class="g-acts"><button class="btn big" data-g="tskip">${T.phase === "rest" ? "Skip rest" : T.phase === "ready" ? "Start now" : "Done early"}</button><button class="g-link" data-g="tplus">+15 s</button></div>`;
       else if (cur.h) acts = `<div class="g-acts"><button class="btn big" data-g="hold" data-id="${cur.id}">${PLAY}Start ${cur.h} s hold</button><button class="g-link" data-g="skip" data-id="${cur.id}">Skip this exercise</button></div>`;
       else acts = `<div class="g-acts"><button class="btn big" data-g="set" data-id="${cur.id}">Done set ${n + 1}</button><button class="g-link" data-g="skip" data-id="${cur.id}">Skip this exercise</button></div>`;
     }
   }
   $("#guideIn").innerHTML = top + body + acts;
+  mountDemos();
 }
 
 /* ---------- timer ---------- */
